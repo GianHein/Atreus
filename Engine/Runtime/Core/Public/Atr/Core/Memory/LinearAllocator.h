@@ -20,5 +20,8 @@ namespace Atr
   protected:
     void *m_Base = nullptr;
     u64 m_Offset;
+
+  private:
+    LinearAllocator(LinearAllocator &Allocator);
   };
 }
