@@ -1,21 +1,28 @@
 #include "Atr/Core/RuntimeMain.h"
 
-#include "Atr/Platform/Console.h"
+#include "Atr/Core/Logging/Logger.h"
 
 namespace Atr
 {
   void AtrRuntimeInit()
   {
-    Platform::ConsoleWrite(CONSOLE_COLOR_INFO, "Initializing Atr Runtime...\n");
+    ATR_TRACE("Initializing runtime");
   }
 
   void AtrRuntimeMain()
   {
-    Platform::ConsoleWrite(CONSOLE_COLOR_INFO, "Running Atr Runtime...\n");
+    ATR_TRACE("Running runtime");
+
+    ATR_TRACE("TRACE");
+    ATR_DEBUG("DEBUG");
+    ATR_INFO("INFO");
+    ATR_WARN("WARN");
+    ATR_ERROR("ERROR");
+    ATR_FATAL("FATAL");
   }
 
   void AtrRuntimeShutdown()
   {
-    Platform::ConsoleWrite(CONSOLE_COLOR_INFO, "Shutting down Atr Runtime...\n");
+    ATR_TRACE("Shutting down runtime");
   }
 }
