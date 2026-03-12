@@ -6,6 +6,7 @@ namespace Atr
 {
   class IAllocator
   {
+  public:
     IAllocator(const u64 TotalSize) : m_TotalSize(TotalSize), m_Used(0), m_Peak(0)
     {
     }
@@ -14,6 +15,8 @@ namespace Atr
     {
       m_TotalSize = 0;
     }
+
+    virtual void Init() = 0;
 
     virtual void *Allocate(u64 Size, u64 Alignment = 0) = 0;
     virtual void Free(void *Address) = 0;
