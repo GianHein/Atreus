@@ -1,5 +1,6 @@
 #include "Atr/Core/Logging/Logger.h"
 
+#include "Atr/Core/Assertions/Assert.h"
 #include "Atr/Platform/Console.h"
 #include "Atr/Platform/Time.h"
 
@@ -44,5 +45,11 @@ namespace Atr
     sprintf(OutBuffer, "%s%s: %s\n", TimeBuffer, LevelMap[(u8)Level], FormatBuffer);
 
     Platform::ConsoleWrite((ConsoleColor)Level, OutBuffer);
+  }
+  void FailAssertion(const char *Expression, const char *Message, const char *File, u32 Line)
+  {
+    OutputLogMessage(LogLevel::LEVEL_FATAL,
+                     "Assertion Failed: (%s), Message: %s, File: %s, Line: %d", Expression, Message,
+                     File, Line);
   }
 }
