@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Atr/Core/Logging/Logger.h"
 #include "Atr/Definitions.h"
 
 #define ATR_ENABLE_ASSERTS
@@ -14,7 +15,8 @@
 
 namespace Atr
 {
-  void FailAssertion(const char *Expression, const char *Message, const char *File, u32 Line);
+  void FailAssertion(const char *Expression, const char *Message, const char *File, u32 Line,
+                     const char *Function);
 }
 
 #define ATR_ASSERT(expression)                                                                     \
@@ -24,7 +26,7 @@ namespace Atr
     }                                                                                              \
     else                                                                                           \
     {                                                                                              \
-      ::Atr::FailAssertion(#expression, "", __FILE__, __LINE__);                                   \
+      ::Atr::FailAssertion(#expression, "", __FILE__, __LINE__, __func__);                         \
       DebugBreak();                                                                                \
     }                                                                                              \
   }
@@ -36,7 +38,7 @@ namespace Atr
     }                                                                                              \
     else                                                                                           \
     {                                                                                              \
-      ::Atr::FailAssertion(#expression, message, __FILE__, __LINE__);                              \
+      ::Atr::FailAssertion(#expression, message, __FILE__, __LINE__, __func__);                    \
       DebugBreak();                                                                                \
     }                                                                                              \
   }
@@ -49,7 +51,7 @@ namespace Atr
     }                                                                                              \
     else                                                                                           \
     {                                                                                              \
-      ::Atr::FailAssertion(#expression, "", __FILE__, __LINE__);                                   \
+      ::Atr::FailAssertion(#expression, "", __FILE__, __LINE__, __func__);                         \
       DebugBreak();                                                                                \
     }                                                                                              \
   }
