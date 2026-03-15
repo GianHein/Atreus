@@ -23,6 +23,13 @@ namespace Atr
                         const char *Message, ...);
 }
 
+// TODO:
+// Split the following into separate engine and client macros. Both should be toggleable
+// separately and should be able to be compiled out in release builds.
+//
+// I might wan't client logging in release builds for crash reports and such, but I don't
+// want engine logs in release builds.
+
 #define ATR_FATAL(message, ...)                                                                    \
   ::Atr::OutputLogMessage(LogLevel::LEVEL_FATAL, __FILE__, __LINE__, __func__, message,            \
                           ##__VA_ARGS__);

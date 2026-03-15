@@ -2,10 +2,6 @@
 
 int main(int argc, char **argv)
 {
-  // TODO: Load runtime library
-  // TODO: Load RuntimeMain() from the loaded module
-  // TODO: Invoke RuntimeMain()
-
   Atr::LibraryHandle RuntimeLibrary = {0};
   Atr::Platform::LoadLibrary("libAtreusRuntime.dll", &RuntimeLibrary);
 
@@ -20,6 +16,7 @@ int main(int argc, char **argv)
   Atr::Platform::LoadSymbol("AtrRuntimeShutdown", &RuntimeLibrary, (void **)&RuntimeShutdown);
 
   // Call the runtime functions
+
   if (RuntimeInit)
   {
     RuntimeInit();
