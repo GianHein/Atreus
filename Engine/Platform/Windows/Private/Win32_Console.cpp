@@ -1,5 +1,3 @@
-#include "Atr/Platform/Console.h"
-
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -7,11 +5,14 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#undef WriteConsole
+
+#include "Atr/Platform/Console.h"
 
 namespace Atr::Platform
 {
   // TODO: Add some color
-  void ConsoleWrite(ConsoleColor Color, const char *Message)
+  void WriteConsole(ConsoleColor Color, const char *Message)
   {
     char Buffer[CONSOLE_BUFFER_SIZE];
 

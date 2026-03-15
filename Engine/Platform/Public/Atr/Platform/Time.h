@@ -7,7 +7,7 @@
 
 namespace Atr::Platform
 {
-  TimePoint Now();
+  TimePoint GetNow();
 
   Duration FromSeconds(f64 Seconds);
   Duration FromMilliseconds(f64 Milliseconds);

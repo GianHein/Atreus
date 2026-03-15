@@ -5,5 +5,5 @@
 
 namespace Atr::Platform
 {
-  void ConsoleWrite(ConsoleColor Color, const char *Message);
+  void WriteConsole(ConsoleColor Color, const char *Message);
 }

@@ -17,7 +17,7 @@ namespace Atr::Platform
     return Frequency;
   }
 
-  TimePoint Now()
+  TimePoint GetNow()
   {
     LARGE_INTEGER PerformanceCounter;
     QueryPerformanceCounter(&PerformanceCounter);

@@ -41,7 +41,7 @@ namespace Atr
     sprintf(OutBuffer, "[%02u:%02u:%02u] %s: %s\n", Time.Hour, Time.Minute, Time.Second,
             LevelMap[(u8)Level], FormatBuffer);
 
-    Platform::ConsoleWrite((ConsoleColor)Level, OutBuffer);
+    Platform::WriteConsole((ConsoleColor)Level, OutBuffer);
   }
 
   void OutputLogMessage(LogLevel Level, const char *File, u32 Line, const char *Function,
@@ -63,7 +63,7 @@ namespace Atr
     sprintf(OutBuffer, "[%02u:%02u:%02u] %s [%s:%d] [%s]: %s\n", Time.Hour, Time.Minute,
             Time.Second, LevelMap[(u8)Level], File, Line, Function, FormatBuffer);
 
-    Platform::ConsoleWrite((ConsoleColor)Level, OutBuffer);
+    Platform::WriteConsole((ConsoleColor)Level, OutBuffer);
   }
 
   void FailAssertion(const char *Expression, const char *Message, const char *File, u32 Line,
