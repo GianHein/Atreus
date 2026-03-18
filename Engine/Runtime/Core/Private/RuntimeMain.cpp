@@ -6,6 +6,11 @@ namespace Atr
 {
   void AtrRuntimeInit()
   {
+    if (!Logger::Init())
+    {
+      ATR_FATAL("Failed to initialize logger");
+    }
+
     ATR_TRACE("Initializing runtime");
   }
 
@@ -17,5 +22,6 @@ namespace Atr
   void AtrRuntimeShutdown()
   {
     ATR_TRACE("Shutting down runtime");
+    Logger::Shutdown();
   }
 }

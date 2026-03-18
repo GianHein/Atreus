@@ -23,6 +23,8 @@ namespace Atr
 #define TRUE 1
 #define FALSE 0
 
+#define ATR_FILE_LOGGING_ENABLED 1
+
 #define STATIC_ASSERT static_assert
 
   STATIC_ASSERT(sizeof(u8) == 1, "Expected u8 to be 1 byte");
