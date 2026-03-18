@@ -11,7 +11,8 @@
 namespace Atr::Platform
 {
   b8 FileExists(const char *Path);
-  b8 FileSize(FileHandle File, u64 *OutSize);
+  b8 GetFileSize(FileHandle File, u64 *OutSize);
+  b8 GetFileModificationTime(const char *Path, u64 *OutTime);
 
   b8 FileCreate(const char *Path, FileHandle *OutFile);
   b8 FileOpen(const char *Path, FileMode Mode, FileHandle *OutFile);

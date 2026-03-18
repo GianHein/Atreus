@@ -17,7 +17,7 @@ namespace Atr::Platform
     return (Attributes & FILE_ATTRIBUTE_DIRECTORY) == 0;
   }
 
-  b8 FileSize(FileHandle File, u64 *OutSize)
+  b8 GetFileSize(FileHandle File, u64 *OutSize)
   {
     LARGE_INTEGER Size;
 
@@ -27,6 +27,35 @@ namespace Atr::Platform
     }
 
     *OutSize = Size.QuadPart;
+    return true;
+  }
+
+  b8 GetFileModificationTime(const char *Path, u64 *OutTime)
+  {
+    WIN32_FILE_ATTRIBUTE_DATA FileData;
+
+    if (!GetFileAttributesExA(Path, GetFileExInfoStandard, &FileData))
+    {
+      return false;
+    }
+
+    FILETIME ModificationTime = FileData.ftLastWriteTime;
+    ULARGE_INTEGER Time;
+
+    Time.LowPart = ModificationTime.dwLowDateTime;
+    Time.HighPart = ModificationTime.dwHighDateTime;
+
+    // Convert to Unix timestamp
+    SYSTEMTIME UnixEpoch = {1970, 1, 0, 1, 0, 0, 0, 0};
+    FILETIME UnixEpochFileTime;
+    SystemTimeToFileTime(&UnixEpoch, &UnixEpochFileTime);
+
+    ULARGE_INTEGER UnixEpochTime;
+    UnixEpochTime.LowPart = UnixEpochFileTime.dwLowDateTime;
+    UnixEpochTime.HighPart = UnixEpochFileTime.dwHighDateTime;
+
+    *OutTime = (Time.QuadPart - UnixEpochTime.QuadPart) / 10000000; // Convert to seconds
+
     return true;
   }
 
