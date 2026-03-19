@@ -53,7 +53,7 @@ namespace Atr
     m_Used += Size;
     m_Peak = std::max(m_Peak, m_Used);
 
-    return void *(FreeNode);
+    return (void *)FreeNode;
   }
 
   void PoolAllocator::Free(void *Address)
