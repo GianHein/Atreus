@@ -1,0 +1,18 @@
+file(GLOB_RECURSE ATREUS_BASE_HEADERS CONFIGURE_DEPENDS
+  "Public/*.h"
+)
+
+file(GLOB_RECURSE ATREUS_BASE_SOURCES CONFIGURE_DEPENDS
+  "Private/*.cpp"
+)
+
+add_library(AtreusBase STATIC ${ATREUS_BASE_HEADERS} ${ATREUS_BASE_SOURCES})
+
+target_include_directories(AtreusBase
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Public>
+  PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Private>
+)
+
+set_target_properties(AtreusBase PROPERTIES FOLDER "Atreus")
