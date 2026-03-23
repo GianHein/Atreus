@@ -32,8 +32,17 @@ namespace Atr
       static const char *Levels[6] = {"[TRACE]", "[DEBUG]", "[INFO]",
                                       "[WARN]",  "[ERROR]", "[FATAL]"};
 
-      printf("%s [%s:%u][%s]: %s\n", Levels[(u8)Level], Context.File, Context.Line,
-             Context.Function, FormatBuffer);
+      static const char *LevelColors[6] = {
+          "\x1b[30m", // TRACE - Black
+          "\x1b[34m", // DEBUG - Blue
+          "\x1b[32m", // INFO  - Green
+          "\x1b[33m", // WARN  - Yellow (Red + Green)
+          "\x1b[31m", // ERROR - Red
+          "\x1b[41m"  // FATAL - Red Background
+      };
+
+      printf("%s%s [%s:%u][%s]: %s\x1b[0m\n", LevelColors[(u8)Level], Levels[(u8)Level],
+             Context.File, Context.Line, Context.Function, FormatBuffer);
     }
   }
 }
