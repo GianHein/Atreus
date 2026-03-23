@@ -8,7 +8,7 @@
 
 namespace Atr::Platform::Console
 {
-  static Style g_CurrentStyle = {};
+  static Style s_CurrentStyle = {};
 
   HANDLE GetConsoleHandle()
   {
@@ -50,7 +50,7 @@ namespace Atr::Platform::Console
 
   void SetStyle(const Style &NewStyle)
   {
-    g_CurrentStyle = NewStyle;
+    s_CurrentStyle = NewStyle;
 
     char Buffer[64];
 
@@ -65,7 +65,7 @@ namespace Atr::Platform::Console
 
   void ResetStyle()
   {
-    g_CurrentStyle = {};
+    s_CurrentStyle = {};
 
     DWORD Written = 0;
     WriteConsoleA(GetConsoleHandle(), "\x1b[0m", sizeof("x1b[0m"), &Written, nullptr);
@@ -87,7 +87,7 @@ namespace Atr::Platform::Console
     WriteText("\n");
   }
 
-  ScopedStyle::ScopedStyle(const Style &Scoped) : m_Previous(g_CurrentStyle)
+  ScopedStyle::ScopedStyle(const Style &Scoped) : m_Previous(s_CurrentStyle)
   {
     SetStyle(Scoped);
   }
