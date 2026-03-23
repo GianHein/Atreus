@@ -68,7 +68,7 @@ namespace Atr::Platform::Console
     s_CurrentStyle = {};
 
     DWORD Written = 0;
-    WriteConsoleA(GetConsoleHandle(), "\x1b[0m", sizeof("x1b[0m"), &Written, nullptr);
+    WriteConsoleA(GetConsoleHandle(), "\x1b[0m", sizeof("\x1b[0m"), &Written, nullptr);
   }
 
   void WriteText(const char *Text)
