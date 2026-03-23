@@ -45,4 +45,9 @@ namespace Atr
              Context.File, Context.Line, Context.Function, FormatBuffer);
     }
   }
+
+  void FailAssertion(const char *Expression, const char *Message, LogContext Context)
+  {
+    Log(LogLevel::FATAL, Context, "Assertion Failed: (%s), Message: %s", Expression, Message);
+  }
 }

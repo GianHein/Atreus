@@ -45,12 +45,15 @@ ATR_STATIC_ASSERT(sizeof(i64) == 8 && "Expected i64 to be 8 bytes");
 // Configuration
 ///////////////////////////////////////////////////////
 
-#define ATR_FILE_LOGGING_ENABLED 1
+#define ATR_DEBUG_MODE 1
 
 #define ATR_TRACE_LOGGING_ENABLED 1
 #define ATR_DEBUG_LOGGING_ENABLED 1
 #define ATR_INFO_LOGGING_ENABLED 1
 #define ATR_WARN_LOGGING_ENABLED 1
+
+#define ATR_FILE_LOGGING_ENABLED 1
+#define ATR_ASSERTIONS_ENABLED 1
 
 ///////////////////////////////////////////////////////
 // Platform Detection
