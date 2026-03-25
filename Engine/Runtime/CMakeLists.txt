@@ -11,4 +11,9 @@ set_target_properties(AtreusRuntime PROPERTIES
 
 add_subdirectory(Core)
 
-target_link_libraries(AtreusRuntime PRIVATE -Wl,--whole-archive AtreusCore -Wl,--no-whole-archive)
+if (MSVC)
+  target_link_libraries(AtreusRuntime PRIVATE AtreusCore)
+  target_link_options(AtreusRuntime PRIVATE "/WHOLEARCHIVE:$<TARGET_FILE_NAME:AtreusCore>")
+else()
+  target_link_libraries(AtreusRuntime PRIVATE -Wl,--whole-archive AtreusCore -Wl,--no-whole-archive)
+endif()
