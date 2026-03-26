@@ -1,10 +1,7 @@
-#include "Atr/Logging/Logger.h"
 #include "Atr/Platform/Library.h"
 
 int main(int argc, char **argv)
 {
-  ATR_TRACE("Launcher executable started");
-
   Atr::Platform::Library::LibraryHandle RuntimeLibrary = {0};
   Atr::Platform::Library::Load("AtreusRuntime.dll", &RuntimeLibrary);
 
