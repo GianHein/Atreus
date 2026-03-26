@@ -3,8 +3,6 @@
 #include <cstdarg>
 #include <cstdio>
 
-#define MAX_LOG_MESSAGE_LENGTH 2048
-
 namespace Atr
 {
   static LogCallback s_LogCallback = nullptr;

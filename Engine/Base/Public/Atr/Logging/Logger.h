@@ -2,6 +2,8 @@
 
 #include "Atr/Definitions.h"
 
+#define MAX_LOG_MESSAGE_LENGTH 2048
+
 namespace Atr
 {
   enum class LogLevel : u8

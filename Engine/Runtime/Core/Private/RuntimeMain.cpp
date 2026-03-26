@@ -1,11 +1,14 @@
 #include "Atr/Core/RuntimeMain.h"
 
+#include "Atr/Core/Logging/Logger.h"
 #include "Atr/Logging/Logger.h"
 
 namespace Atr
 {
   void RuntimeInit()
   {
+    Logger::Init();
+
     ATR_TRACE("Initializing runtime");
   }
 
@@ -17,5 +20,7 @@ namespace Atr
   void RuntimeShutdown()
   {
     ATR_TRACE("Shutting down runtime");
+
+    Logger::Shutdown();
   }
 }
