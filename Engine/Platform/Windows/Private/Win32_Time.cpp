@@ -35,6 +35,34 @@ namespace Atr::Platform::Time
   {
     return {(u64)((Milliseconds * GetTicksPerSecond()) / 1000)};
   }
+
+  DateTime GetUtcTime()
+  {
+    SYSTEMTIME Time;
+    GetSystemTime(&Time);
+
+    return {.Year = (u16)Time.wYear,
+            .Month = (u8)Time.wMonth,
+            .Day = (u8)Time.wDay,
+            .Hour = (u8)Time.wHour,
+            .Minute = (u8)Time.wMinute,
+            .Second = (u8)Time.wSecond,
+            .Millisecond = (u16)Time.wMilliseconds};
+  }
+
+  DateTime GetLocalTime()
+  {
+    SYSTEMTIME Time;
+    ::GetLocalTime(&Time);
+
+    return {.Year = (u16)Time.wYear,
+            .Month = (u8)Time.wMonth,
+            .Day = (u8)Time.wDay,
+            .Hour = (u8)Time.wHour,
+            .Minute = (u8)Time.wMinute,
+            .Second = (u8)Time.wSecond,
+            .Millisecond = (u16)Time.wMilliseconds};
+  }
 }
 
 namespace Atr
