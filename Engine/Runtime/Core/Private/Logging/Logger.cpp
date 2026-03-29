@@ -30,6 +30,9 @@ namespace Atr
 
   void Logger::Log(LogLevel Level, const LogContext &Context, const char *Message)
   {
+    // All this redundancy is not ideal, cba to fix it right now, that probably
+    // will happen at a later point tho.
+
     static const char *Levels[6] = {"[TRACE]", "[DEBUG]", "[INFO]", "[WARN]", "[ERROR]", "[FATAL]"};
 
     char Buffer[MAX_LOG_MESSAGE_LENGTH];

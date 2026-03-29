@@ -1,7 +1,6 @@
 #include "Atr/Core/RuntimeMain.h"
 
 #include "Atr/Core/Logging/Logger.h"
-#include "Atr/Logging/Logger.h"
 
 namespace Atr
 {
