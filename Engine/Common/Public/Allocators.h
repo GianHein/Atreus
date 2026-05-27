@@ -26,7 +26,7 @@ namespace Atr
   class PoolAllocator
   {
   public:
-    PoolAllocator(const u64 chunk_size, const u64 chunk_count);
+    PoolAllocator(const u64 block_size, const u64 capacity);
     ~PoolAllocator();
 
     void Init();
@@ -36,8 +36,9 @@ namespace Atr
     void Reset();
 
   private:
-    u64 chunk_size;
-    u64 chunk_count;
+    u64 block_size;
+    u64 capacity;
+    u64 count;
 
     ptr base;
     u64 offset;
