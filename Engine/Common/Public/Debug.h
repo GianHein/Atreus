@@ -25,7 +25,7 @@ namespace Atr
   void SetLogCallback(LogCallback callback);
 
   void LogMessage(LogLevel level, const LogContext &context, const char *message, ...);
-  void LogAssertionFailure(const char *expression, const char *message, LogContext &context);
+  void LogAssertionFailure(const char *expression, const char *message, const LogContext &context);
 }
 
 #define ATR_MAX_LOG_MESSAGE_LENGTH 2048
@@ -63,9 +63,9 @@ namespace Atr
 #if ATR_ASSERTIONS_ENABLED == 1
 #if _MSC_VER
 #include <intrin.h>
-#define DebugBreak() __debugbreak()
+#define ATR_DEBUG_BREAK() __debugbreak()
 #else
-#define DebugBreak() __builtin_trap()
+#define ATR_DEBUG_BREAK() __builtin_trap()
 #endif
 
 #define ATR_ASSERT(expression, message)                                                            \
@@ -75,8 +75,9 @@ namespace Atr
     }                                                                                              \
     else                                                                                           \
     {                                                                                              \
-      ::Atr::LogAssertionFailure(#expression, message, {__FILE__, __LINE__, __func__});            \
-      DebugBreak();                                                                                \
+      ::Atr::LogContext context = {__FILE__, __LINE__, __func__};                                  \
+      ::Atr::LogAssertionFailure(#expression, message, context);                                   \
+      ATR_DEBUG_BREAK();                                                                           \
     }                                                                                              \
   }
 
@@ -88,8 +89,9 @@ namespace Atr
     }                                                                                              \
     else                                                                                           \
     {                                                                                              \
-      ::Atr::LogAssertionFailure(#expression, message, {__FILE__, __LINE__, __func__});            \
-      DebugBreak();                                                                                \
+      ::Atr::LogContext context = {__FILE__, __LINE__, __func__};                                  \
+      ::Atr::LogAssertionFailure(#expression, message, context);                                   \
+      ATR_DEBUG_BREAK();                                                                           \
     }                                                                                              \
   }
 #else

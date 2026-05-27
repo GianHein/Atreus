@@ -31,7 +31,7 @@ namespace Atr
     }
   }
 
-  void LogAssertionFailure(const char *expression, const char *message, LogContext &context)
+  void LogAssertionFailure(const char *expression, const char *message, const LogContext &context)
   {
     LogMessage(LogLevel::FATAL, context, "Assertion Failed: (%s), Message: %s", expression,
                message);
