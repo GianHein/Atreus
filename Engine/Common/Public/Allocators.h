@@ -1,23 +1,10 @@
 #pragma once
 
+#include "Containers/List.h"
 #include "Definitions.h"
 
 namespace Atr
 {
-  class FreelistAllocator
-  {
-    FreelistAllocator(const u64 capacity);
-    ~FreelistAllocator();
-
-    void Init();
-
-    ptr Allocator(u64 size, u64 alignment = 0);
-    void Reset();
-
-  private:
-    u64 capacity;
-  };
-
   class LinearAllocator
   {
   public:
@@ -39,15 +26,21 @@ namespace Atr
   class PoolAllocator
   {
   public:
-    PoolAllocator(const u64 capacity);
+    PoolAllocator(const u64 chunk_size, const u64 chunk_count);
     ~PoolAllocator();
 
     void Init();
 
-    ptr Allocate(u64 size, u64 alignment = 0);
+    ptr Allocate();
+    void Free(ptr chunk);
     void Reset();
 
   private:
-    u64 capacity;
+    u64 chunk_size;
+    u64 chunk_count;
+
+    ptr base;
+    u64 offset;
+    List<ptr> free_list;
   };
 }
