@@ -2,10 +2,6 @@
 
 ## Bugs
 
-- [ ] Win32File.cpp ReadFile/WriteFile: `size` (u64) passed into a DWORD param — silent truncation above 4 GiB; loop or assert
-- [ ] Win32Window.cpp: SetWindowTitle / SetWindowSize / GetWindowSize / SetWindowFullscreen / IsWindowFullscreen / SetWindowBorderless / GetMonitorInfoForWindow dereference `ResolveWindow()` with no null check — stale/invalid handle crashes
-- [ ] Win32File.cpp OpenFile: does not write `*out_handle` on failure — set it to InvalidFileHandle
-- [ ] Win32File.cpp GetFileSize: returns 0 for both empty file and error — change to `b8 GetFileSize(FileHandle, u64* out)`
 - [ ] Win32Window.cpp: clear GWLP_USERDATA in FreeWin32Window and null-check the window ptr in WndProc dispatch — messages queued for an already-destroyed HWND land on a recycled pool slot
 
 ## Win32 correctness
