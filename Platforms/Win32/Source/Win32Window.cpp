@@ -20,15 +20,15 @@ namespace Atreus
 
   struct Win32Window
   {
-    u32   index;
-    HWND  hwnd;
-    b8    fullscreen;
-    b8    borderless;
-    i32   last_mouse_x;
-    i32   last_mouse_y;
-    b8    has_last_mouse_pos;
-    DWORD dwStyle;
-    RECT  rect;
+    u32   index              = UINT32_MAX;
+    HWND  hwnd               = nullptr;
+    b8    fullscreen         = false;
+    b8    borderless         = false;
+    i32   last_mouse_x       = 0;
+    i32   last_mouse_y       = 0;
+    b8    has_last_mouse_pos = false;
+    DWORD dwStyle            = 0;
+    RECT  rect               = {};
   };
 
   static Win32Window window_pool[MAX_WINDOWS];
@@ -513,8 +513,8 @@ namespace Atreus
 
   struct MonitorEnumData
   {
-    MonitorInfo monitors[16];
-    u32         count;
+    MonitorInfo monitors[16] = {};
+    u32         count        = 0;
   };
 
   static BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC, LPRECT, LPARAM lParam)

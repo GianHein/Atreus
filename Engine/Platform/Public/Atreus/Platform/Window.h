@@ -6,8 +6,8 @@ namespace Atreus
 {
   struct WindowHandle
   {
-    u32 index;
-    u32 generation;
+    u32 index      = UINT32_MAX;
+    u32 generation = UINT32_MAX;
   };
 
   constexpr WindowHandle InvalidWindowHandle = {UINT32_MAX, UINT32_MAX};
@@ -17,22 +17,24 @@ namespace Atreus
 
   struct MonitorInfo
   {
-    i32 x, y;
-    u32 width, height;
-    u32 refresh_rate;
-    u32 dpi;
-    f32 scale_factor;
-    b8  is_primary;
+    i32 x            = 0;
+    i32 y            = 0;
+    u32 width        = 0;
+    u32 height       = 0;
+    u32 refresh_rate = 0;
+    u32 dpi          = 0;
+    f32 scale_factor = 1.0f;
+    b8  is_primary   = false;
   };
 
   struct WindowDescription
   {
-    const char *title;
-    u32         width;
-    u32         height;
-    b8          fullscreen;
-    b8          borderless;
-    b8          resizable;
+    const char *title      = "Atreus Window";
+    u32         width      = 800;
+    u32         height     = 600;
+    b8          fullscreen = false;
+    b8          borderless = false;
+    b8          resizable  = true;
   };
 
   b8   CreateWindow(const WindowDescription &description, WindowHandle *out_handle);

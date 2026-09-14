@@ -6,7 +6,7 @@ namespace Atreus
 {
   struct FileHandle
   {
-    void *handle;
+    void *handle = nullptr;
   };
 
   constexpr FileHandle InvalidFileHandle = {nullptr};

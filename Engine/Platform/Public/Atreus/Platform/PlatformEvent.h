@@ -23,52 +23,52 @@ namespace Atreus
 
   struct KeyPressedData
   {
-    Key key;
+    Key key = Key::Unknown;
   };
 
   struct KeyReleasedData
   {
-    Key key;
+    Key key = Key::Unknown;
   };
 
   struct MouseMoveData
   {
-    i32 x;
-    i32 y;
-    i32 delta_x;
-    i32 delta_y;
+    i32 x       = 0;
+    i32 y       = 0;
+    i32 delta_x = 0;
+    i32 delta_y = 0;
   };
 
   struct MouseButtonPressedData
   {
-    MouseButton button;
+    MouseButton button = MouseButton::Unknown;
   };
 
   struct MouseButtonReleasedData
   {
-    MouseButton button;
+    MouseButton button = MouseButton::Unknown;
   };
 
   struct MouseWheelData
   {
-    i32 delta;
+    i32 delta = 0;
   };
 
   struct WindowResizeData
   {
-    u32 width;
-    u32 height;
+    u32 width  = 0;
+    u32 height = 0;
   };
 
   struct FocusChangedData
   {
-    b8 focused;
+    b8 focused = false;
   };
 
   struct PlatformEvent
   {
-    PlatformEventType type;
-    WindowHandle      window;
+    PlatformEventType type   = PlatformEventType::None;
+    WindowHandle      window = {UINT32_MAX, UINT32_MAX};
     union
     {
       KeyPressedData          key_pressed;
@@ -84,8 +84,8 @@ namespace Atreus
 
   struct PlatformEventBuffer
   {
-    PlatformEvent *buffer;
-    u32            buffer_size;
+    PlatformEvent *buffer      = nullptr;
+    u32            buffer_size = 0;
   };
 
   PlatformEventBuffer PollEvents();

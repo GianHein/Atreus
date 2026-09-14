@@ -11,13 +11,13 @@ namespace Atreus
 
   struct DateTime
   {
-    u16 year;
-    u8  month;
-    u8  day;
-    u8  hour;
-    u8  minute;
-    u8  second;
-    u16 millisecond;
+    u16 year        = 0;
+    u8  month       = 0;
+    u8  day         = 0;
+    u8  hour        = 0;
+    u8  minute      = 0;
+    u8  second      = 0;
+    u16 millisecond = 0;
   };
 
   DateTime GetUtcDateTime();

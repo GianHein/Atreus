@@ -137,7 +137,9 @@ namespace Atreus
 
   enum class MouseButton : u8
   {
-    Left = 0,
+    Unknown = 0,
+
+    Left,
     Right,
     Middle,
 
@@ -149,17 +151,19 @@ namespace Atreus
 
   struct InputState
   {
-    b8 keys_pressed[(u32)Key::COUNT];
-    b8 keys_held[(u32)Key::COUNT];
-    b8 keys_released[(u32)Key::COUNT];
+    b8 keys_pressed[(u32)Key::COUNT]  = {};
+    b8 keys_held[(u32)Key::COUNT]     = {};
+    b8 keys_released[(u32)Key::COUNT] = {};
 
-    b8 mouse_pressed[(u32)MouseButton::COUNT];
-    b8 mouse_held[(u32)MouseButton::COUNT];
-    b8 mouse_released[(u32)MouseButton::COUNT];
+    b8 mouse_pressed[(u32)MouseButton::COUNT]  = {};
+    b8 mouse_held[(u32)MouseButton::COUNT]     = {};
+    b8 mouse_released[(u32)MouseButton::COUNT] = {};
 
-    i32 mouse_x, mouse_y;
-    i32 mouse_delta_x, mouse_delta_y;
-    i32 mouse_wheel_delta;
+    i32 mouse_x           = 0;
+    i32 mouse_y           = 0;
+    i32 mouse_delta_x     = 0;
+    i32 mouse_delta_y     = 0;
+    i32 mouse_wheel_delta = 0;
   };
 
   void UpdateInputState(
