@@ -1,13 +1,13 @@
 1. [/] Foundation
-   - Window and platform layer
-   - Fixed timestep with accumulator
-   - Input
-   - Console + file logging
-   - Tracy
-   - Minimal 2D renderer
-   - Generational handles
-   - Basic collision
-   - Small finished game shipped as a zip
+   - [x] Window and platform layer
+   - [/] Fixed timestep with accumulator
+   - [/] Input
+   - [ ] Console + file logging
+   - [ ] Tracy
+   - [ ] Minimal 2D renderer
+   - [ ] Generational handles
+   - [ ] Basic collision
+   - [ ] Small finished game shipped as a zip
 2. [ ] Scale
    - Arena allocator
    - Stack allocator
