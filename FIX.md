@@ -7,7 +7,7 @@
 ## Win32 correctness
 
 - [ ] Set DPI awareness (SetProcessDpiAwarenessContext, PER_MONITOR_AWARE_V2) before the first window; switch AdjustWindowRect -> AdjustWindowRectExForDpi; handle WM_DPICHANGED. Until then every client size and MonitorInfo.dpi/scale_factor is wrong on HiDPI displays
-- [ ] Focus loss leaves keys/buttons stuck "held": on FocusChanged{focused=false} clear held/pressed/released state (or synthesize releases for everything down)
+- [x] Focus loss leaves keys/buttons stuck "held": on FocusChanged{focused=false} clear held/pressed/released state (or synthesize releases for everything down)
 - [ ] No SetCapture/ReleaseCapture on mouse buttons — press inside, release outside = permanently stuck button
 
 ## API

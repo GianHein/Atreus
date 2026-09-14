@@ -74,6 +74,33 @@ namespace Atreus
         break;
       }
 
+      case PlatformEventType::FocusChanged:
+      {
+        if (!event.focus_changed.focused)
+        {
+          for (u32 i = 0; i < (u32)Key::COUNT; ++i)
+          {
+            if (state->keys_held[i] || state->keys_pressed[i])
+            {
+              state->keys_released[i] = true;
+              state->keys_held[i]     = false;
+              state->keys_pressed[i]  = false;
+            }
+          }
+
+          for (u32 i = 0; i < (u32)MouseButton::COUNT; ++i)
+          {
+            if (state->mouse_held[i] || state->mouse_pressed[i])
+            {
+              state->mouse_released[i] = true;
+              state->mouse_held[i]     = false;
+              state->mouse_pressed[i]  = false;
+            }
+          }
+        }
+        break;
+      }
+
       default:
         break;
       }
