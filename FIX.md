@@ -1,13 +1,8 @@
 # FIX
 
-## Bugs
-
-- [x] Win32Window.cpp: clear GWLP_USERDATA in FreeWin32Window and null-check the window ptr in WndProc dispatch — messages queued for an already-destroyed HWND land on a recycled pool slot
-
 ## Win32 correctness
 
 - [ ] Set DPI awareness (SetProcessDpiAwarenessContext, PER_MONITOR_AWARE_V2) before the first window; switch AdjustWindowRect -> AdjustWindowRectExForDpi; handle WM_DPICHANGED. Until then every client size and MonitorInfo.dpi/scale_factor is wrong on HiDPI displays
-- [x] Focus loss leaves keys/buttons stuck "held": on FocusChanged{focused=false} clear held/pressed/released state (or synthesize releases for everything down)
 - [ ] No SetCapture/ReleaseCapture on mouse buttons — press inside, release outside = permanently stuck button
 
 ## API
