@@ -2,7 +2,7 @@
 
 ## Bugs
 
-- [ ] Win32Window.cpp: clear GWLP_USERDATA in FreeWin32Window and null-check the window ptr in WndProc dispatch — messages queued for an already-destroyed HWND land on a recycled pool slot
+- [x] Win32Window.cpp: clear GWLP_USERDATA in FreeWin32Window and null-check the window ptr in WndProc dispatch — messages queued for an already-destroyed HWND land on a recycled pool slot
 
 ## Win32 correctness
 

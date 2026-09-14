@@ -56,6 +56,8 @@ namespace Atreus
     {
       if (&window_pool[i] == window)
       {
+        SetWindowLongPtrA(window->hwnd, GWLP_USERDATA, 0);
+
         *window             = {};
         window_pool_used[i] = false;
         window_generations[i]++;
