@@ -23,52 +23,52 @@ namespace Atreus
 
   struct KeyPressedData
   {
-    Key key = Key::Unknown;
+    Key key;
   };
 
   struct KeyReleasedData
   {
-    Key key = Key::Unknown;
+    Key key;
   };
 
   struct MouseMoveData
   {
-    i32 x       = 0;
-    i32 y       = 0;
-    i32 delta_x = 0;
-    i32 delta_y = 0;
+    i32 x;
+    i32 y;
+    i32 delta_x;
+    i32 delta_y;
   };
 
   struct MouseButtonPressedData
   {
-    MouseButton button = MouseButton::Unknown;
+    MouseButton button;
   };
 
   struct MouseButtonReleasedData
   {
-    MouseButton button = MouseButton::Unknown;
+    MouseButton button;
   };
 
   struct MouseWheelData
   {
-    i32 delta = 0;
+    i32 delta;
   };
 
   struct WindowResizeData
   {
-    u32 width  = 0;
-    u32 height = 0;
+    u32 width;
+    u32 height;
   };
 
   struct FocusChangedData
   {
-    b8 focused = false;
+    b8 focused;
   };
 
   struct PlatformEvent
   {
-    PlatformEventType type   = PlatformEventType::None;
-    WindowHandle      window = {UINT32_MAX, UINT32_MAX};
+    PlatformEventType type;
+    WindowHandle      window;
     union
     {
       KeyPressedData          key_pressed;
