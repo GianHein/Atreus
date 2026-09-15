@@ -1,7 +1,7 @@
 1. [/] Foundation
    - [x] Window and platform layer
    - [/] Fixed timestep with accumulator
-   - [/] Input
+   - [x] Input
    - [ ] Console + file logging
    - [ ] Tracy
    - [ ] Minimal 2D renderer

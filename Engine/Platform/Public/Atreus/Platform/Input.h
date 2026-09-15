@@ -180,5 +180,63 @@ namespace Atreus
     return state.keys_held[(u32)key];
   }
 
-  // ...
+  inline b8 IsKeyReleased(const InputState &state, Key key)
+  {
+    return state.keys_released[(u32)key];
+  }
+
+  inline b8 IsMouseButtonPressed(const InputState &state, MouseButton button)
+  {
+    return state.mouse_pressed[(u32)button];
+  }
+
+  inline b8 IsMouseButtonHeld(const InputState &state, MouseButton button)
+  {
+    return state.mouse_held[(u32)button];
+  }
+
+  inline b8 IsMouseButtonReleased(const InputState &state, MouseButton button)
+  {
+    return state.mouse_released[(u32)button];
+  }
+
+  inline void GetMousePosition(const InputState &state, i32 *x, i32 *y)
+  {
+    *x = state.mouse_x;
+    *y = state.mouse_y;
+  }
+
+  inline void GetMouseDelta(const InputState &state, i32 *delta_x, i32 *delta_y)
+  {
+    *delta_x = state.mouse_delta_x;
+    *delta_y = state.mouse_delta_y;
+  }
+
+  inline i32 GetMouseWheelDelta(const InputState &state)
+  {
+    return state.mouse_wheel_delta;
+  }
+
+  inline void ResetInputState(InputState *state)
+  {
+    for (u32 i = 0; i < (u32)Key::COUNT; ++i)
+    {
+      state->keys_pressed[i]  = false;
+      state->keys_held[i]     = false;
+      state->keys_released[i] = false;
+    }
+
+    for (u32 i = 0; i < (u32)MouseButton::COUNT; ++i)
+    {
+      state->mouse_pressed[i]  = false;
+      state->mouse_held[i]     = false;
+      state->mouse_released[i] = false;
+    }
+
+    state->mouse_x           = 0;
+    state->mouse_y           = 0;
+    state->mouse_delta_x     = 0;
+    state->mouse_delta_y     = 0;
+    state->mouse_wheel_delta = 0;
+  }
 }
