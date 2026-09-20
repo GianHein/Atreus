@@ -5,37 +5,35 @@
 #endif
 
 #include "Atreus/Platform/PlatformEvent.h"
+#include "Win32_TranslateVK.h"
 
 #include <Windows.h>
+#include <windowsx.h>
 #undef CreateWindow
 
-#include "Win32Internal.h"
-
 #include <cstdio>
+#include <cstring>
 
 namespace Atreus
 {
-  constexpr u32 MAX_WINDOWS  = 8;
-  constexpr u32 MAX_MONITORS = 16;
-
-  struct Win32Window
+  struct Win32_Window
   {
     u32   index              = UINT32_MAX;
     HWND  hwnd               = nullptr;
-    b8    fullscreen         = false;
-    b8    borderless         = false;
     i32   last_mouse_x       = 0;
     i32   last_mouse_y       = 0;
-    b8    has_last_mouse_pos = false;
+    b8    has_mouse_position = false;
+    b8    fullscreen         = false;
+    b8    borderless         = false;
     DWORD dwStyle            = 0;
     RECT  rect               = {};
   };
 
-  static Win32Window window_pool[MAX_WINDOWS];
-  static b8          window_pool_used[MAX_WINDOWS];
-  static u32         window_generations[MAX_WINDOWS];
+  static Win32_Window window_pool[MAX_WINDOWS];
+  static b8           window_pool_used[MAX_WINDOWS];
+  static u32          window_generations[MAX_WINDOWS];
 
-  static Win32Window *AllocWin32Window()
+  static Win32_Window *AllocateWin32Window()
   {
     for (u32 i = 0; i < MAX_WINDOWS; ++i)
     {
@@ -50,7 +48,7 @@ namespace Atreus
     return nullptr;
   }
 
-  static void FreeWin32Window(Win32Window *window)
+  static void FreeWin32Window(Win32_Window *window)
   {
     for (u32 i = 0; i < MAX_WINDOWS; ++i)
     {
@@ -67,7 +65,7 @@ namespace Atreus
     }
   }
 
-  static Win32Window *ResolveWindow(WindowHandle handle)
+  static Win32_Window *ResolveWindow(WindowHandle handle)
   {
     if (handle.index >= MAX_WINDOWS) return nullptr;
     if (!window_pool_used[handle.index]) return nullptr;
@@ -76,21 +74,31 @@ namespace Atreus
     return &window_pool[handle.index];
   }
 
-  static LRESULT Win32WndProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
+  constexpr u32        MAX_PLATFORM_EVENTS = 512;
+  static PlatformEvent event_queue[MAX_PLATFORM_EVENTS];
+  static u32           event_queue_count = 0;
+
+  static void PushEvent(const PlatformEvent &event)
   {
-    Win32Window *window = (Win32Window *)GetWindowLongPtrA(hwnd, GWLP_USERDATA);
+    if (event_queue_count >= MAX_PLATFORM_EVENTS) return;
+    event_queue[event_queue_count++] = event;
+  }
+
+  static LRESULT Win32_WndProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
+  {
+    Win32_Window *window = (Win32_Window *)GetWindowLongPtrA(hwnd, GWLP_USERDATA);
 
     if (window == nullptr)
     {
       if (Msg == WM_NCCREATE)
       {
         CREATESTRUCTA *create_struct = (CREATESTRUCTA *)lParam;
-        window                       = (Win32Window *)create_struct->lpCreateParams;
+        window                       = (Win32_Window *)create_struct->lpCreateParams;
         SetWindowLongPtrA(hwnd, GWLP_USERDATA, (LONG_PTR)window);
         window->hwnd = hwnd;
       }
 
-      return DefWindowProc(hwnd, Msg, wParam, lParam);
+      return DefWindowProcA(hwnd, Msg, wParam, lParam);
     }
 
     WindowHandle  handle = {window->index, window_generations[window->index]};
@@ -101,184 +109,198 @@ namespace Atreus
     {
     case WM_CLOSE:
     {
-      event.type = PlatformEventType::WindowClose;
-      PushPlatformEvent(event);
+      event.type         = PlatformEventType::WindowClose;
+      event.window_close = {};
+      PushEvent(event);
       return 0;
-    };
+    }
+
+    case WM_KEYDOWN:
+    case WM_SYSKEYDOWN:
+    {
+      event.type          = PlatformEventType::KeyPress;
+      event.key_press.key = TranslateVK(wParam, lParam);
+      PushEvent(event);
+      return 0;
+    }
+
+    case WM_KEYUP:
+    case WM_SYSKEYUP:
+    {
+      event.type            = PlatformEventType::KeyRelease;
+      event.key_release.key = TranslateVK(wParam, lParam);
+      PushEvent(event);
+      return 0;
+    }
+
+    case WM_LBUTTONDOWN:
+    {
+      event.type                      = PlatformEventType::MouseButtonPress;
+      event.mouse_button_press.button = MouseButton::Left;
+      PushEvent(event);
+      return 0;
+    }
+
+    case WM_LBUTTONUP:
+    {
+      event.type                        = PlatformEventType::MouseButtonRelease;
+      event.mouse_button_release.button = MouseButton::Left;
+      PushEvent(event);
+      return 0;
+    }
+
+    case WM_RBUTTONDOWN:
+    {
+      event.type                      = PlatformEventType::MouseButtonPress;
+      event.mouse_button_press.button = MouseButton::Right;
+      PushEvent(event);
+      return 0;
+    }
+
+    case WM_RBUTTONUP:
+    {
+      event.type                        = PlatformEventType::MouseButtonRelease;
+      event.mouse_button_release.button = MouseButton::Right;
+      PushEvent(event);
+      return 0;
+    }
+
+    case WM_MBUTTONDOWN:
+    {
+      event.type                      = PlatformEventType::MouseButtonPress;
+      event.mouse_button_press.button = MouseButton::Middle;
+      PushEvent(event);
+      return 0;
+    }
+
+    case WM_MBUTTONUP:
+    {
+      event.type                        = PlatformEventType::MouseButtonRelease;
+      event.mouse_button_release.button = MouseButton::Middle;
+      PushEvent(event);
+      return 0;
+    }
+
+    case WM_XBUTTONDOWN:
+    {
+      event.type = PlatformEventType::MouseButtonPress;
+      event.mouse_button_press.button =
+          GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? MouseButton::X1 : MouseButton::X2;
+      PushEvent(event);
+      return TRUE; // https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-xbuttondown#return-value
+    }
+
+    case WM_XBUTTONUP:
+    {
+      event.type = PlatformEventType::MouseButtonRelease;
+      event.mouse_button_release.button =
+          GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? MouseButton::X1 : MouseButton::X2;
+      PushEvent(event);
+      return TRUE; // https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-xbuttonup#return-value
+    }
+
+    case WM_MOUSEMOVE:
+    {
+      event.type         = PlatformEventType::MouseMove;
+      event.mouse_move.x = GET_X_LPARAM(lParam);
+      event.mouse_move.y = GET_Y_LPARAM(lParam);
+
+      if (!window->has_mouse_position)
+      {
+        event.mouse_move.delta_x = 0;
+        event.mouse_move.delta_y = 0;
+
+        window->last_mouse_x       = event.mouse_move.x;
+        window->last_mouse_y       = event.mouse_move.y;
+        window->has_mouse_position = true;
+        PushEvent(event);
+        return 0;
+      }
+
+      event.mouse_move.delta_x = event.mouse_move.x - window->last_mouse_x;
+      event.mouse_move.delta_y = event.mouse_move.y - window->last_mouse_y;
+      window->last_mouse_x     = event.mouse_move.x;
+      window->last_mouse_y     = event.mouse_move.y;
+      PushEvent(event);
+      return 0;
+    }
+
+    case WM_MOUSEWHEEL:
+    {
+      event.type              = PlatformEventType::MouseWheel;
+      event.mouse_wheel.delta = GET_WHEEL_DELTA_WPARAM(wParam);
+      PushEvent(event);
+      return 0;
+    }
+
+    case WM_SETFOCUS:
+    {
+      event.type                 = PlatformEventType::FocusChange;
+      event.focus_change.focused = true;
+      PushEvent(event);
+      return 0;
+    }
+
+    case WM_KILLFOCUS:
+    {
+      event.type                 = PlatformEventType::FocusChange;
+      event.focus_change.focused = false;
+      window->has_mouse_position = false;
+      PushEvent(event);
+      return 0;
+    }
 
     case WM_SIZE:
     {
       event.type                 = PlatformEventType::WindowResize;
       event.window_resize.width  = LOWORD(lParam);
       event.window_resize.height = HIWORD(lParam);
-
-      PushPlatformEvent(event);
-      return 0;
-    };
-
-    case WM_SETFOCUS:
-    {
-      event.type                  = PlatformEventType::FocusChanged;
-      event.focus_changed.focused = true;
-
-      PushPlatformEvent(event);
-      return 0;
-    };
-
-    case WM_KILLFOCUS:
-    {
-      event.type                  = PlatformEventType::FocusChanged;
-      event.focus_changed.focused = false;
-      window->has_last_mouse_pos  = false;
-
-      PushPlatformEvent(event);
-      return 0;
-    };
-
-    case WM_KEYDOWN:
-    case WM_SYSKEYDOWN:
-    {
-      event.type            = PlatformEventType::KeyPressed;
-      event.key_pressed.key = VkToKey(wParam, lParam);
-
-      PushPlatformEvent(event);
-
-      // WM_SYSKEYDOWN is swallowed here so Windows never activates the system
-      // menu (a lone Alt / F10 would otherwise trap us in a modal menu loop).
-      // That also eats Alt+F4, so synthesize the close ourselves. Bit 29 of
-      // lParam (KF_ALTDOWN) is set while Alt is held.
-      if (Msg == WM_SYSKEYDOWN && wParam == VK_F4 && (lParam & (1 << 29)))
-      {
-        event.type = PlatformEventType::WindowClose;
-        PushPlatformEvent(event);
-      }
-
-      return 0;
-    };
-
-    case WM_KEYUP:
-    case WM_SYSKEYUP:
-    {
-      event.type             = PlatformEventType::KeyReleased;
-      event.key_released.key = VkToKey(wParam, lParam);
-
-      PushPlatformEvent(event);
-      return 0;
-    };
-
-    case WM_MOUSEMOVE:
-    {
-      i32 x = (i16)(lParam & 0xFFFF);
-      i32 y = (i16)((lParam >> 16) & 0xFFFF);
-
-      event.type         = PlatformEventType::MouseMove;
-      event.mouse_move.x = x;
-      event.mouse_move.y = y;
-
-      if (window->has_last_mouse_pos)
-      {
-        event.mouse_move.delta_x = x - window->last_mouse_x;
-        event.mouse_move.delta_y = y - window->last_mouse_y;
-      }
-      else
-      {
-        event.mouse_move.delta_x   = 0;
-        event.mouse_move.delta_y   = 0;
-        window->has_last_mouse_pos = true;
-      }
-
-      window->last_mouse_x = x;
-      window->last_mouse_y = y;
-
-      PushPlatformEvent(event);
+      PushEvent(event);
       return 0;
     }
-
-    case WM_LBUTTONDOWN:
-    {
-      event.type                        = PlatformEventType::MouseButtonPressed;
-      event.mouse_button_pressed.button = MouseButton::Left;
-
-      PushPlatformEvent(event);
-      return 0;
-    };
-
-    case WM_RBUTTONDOWN:
-    {
-      event.type                        = PlatformEventType::MouseButtonPressed;
-      event.mouse_button_pressed.button = MouseButton::Right;
-
-      PushPlatformEvent(event);
-      return 0;
-    };
-
-    case WM_MBUTTONDOWN:
-    {
-      event.type                        = PlatformEventType::MouseButtonPressed;
-      event.mouse_button_pressed.button = MouseButton::Middle;
-
-      PushPlatformEvent(event);
-      return 0;
-    };
-
-    case WM_XBUTTONDOWN:
-    {
-      event.type = PlatformEventType::MouseButtonPressed;
-      event.mouse_button_pressed.button =
-          (HIWORD(wParam) == XBUTTON1) ? MouseButton::X1 : MouseButton::X2;
-
-      PushPlatformEvent(event);
-      return 0;
-    };
-
-    case WM_LBUTTONUP:
-    {
-      event.type                         = PlatformEventType::MouseButtonReleased;
-      event.mouse_button_released.button = MouseButton::Left;
-
-      PushPlatformEvent(event);
-      return 0;
-    };
-
-    case WM_RBUTTONUP:
-    {
-      event.type                         = PlatformEventType::MouseButtonReleased;
-      event.mouse_button_released.button = MouseButton::Right;
-
-      PushPlatformEvent(event);
-      return 0;
-    };
-
-    case WM_MBUTTONUP:
-    {
-      event.type                         = PlatformEventType::MouseButtonReleased;
-      event.mouse_button_released.button = MouseButton::Middle;
-
-      PushPlatformEvent(event);
-      return 0;
-    };
-
-    case WM_XBUTTONUP:
-    {
-      event.type = PlatformEventType::MouseButtonReleased;
-      event.mouse_button_released.button =
-          (HIWORD(wParam) == XBUTTON1) ? MouseButton::X1 : MouseButton::X2;
-
-      PushPlatformEvent(event);
-      return 0;
-    };
-
-    case WM_MOUSEWHEEL:
-    {
-      event.type              = PlatformEventType::MouseWheel;
-      event.mouse_wheel.delta = GET_WHEEL_DELTA_WPARAM(wParam);
-
-      PushPlatformEvent(event);
-      return 0;
-    };
     }
 
-    return DefWindowProc(hwnd, Msg, wParam, lParam);
+    return DefWindowProcA(hwnd, Msg, wParam, lParam);
+  }
+
+  u32 PollEvents(PlatformEvent *out_events, u32 max_events)
+  {
+    MSG Msg;
+
+    while (PeekMessageA(&Msg, nullptr, 0, 0, PM_REMOVE))
+    {
+      switch (Msg.message)
+      {
+      case WM_QUIT:
+      {
+        PlatformEvent event = {};
+        event.type          = PlatformEventType::Quit;
+        event.window        = InvalidWindowHandle;
+        event.quit          = {};
+        PushEvent(event);
+        break;
+      }
+      }
+
+      TranslateMessage(&Msg);
+      DispatchMessage(&Msg);
+    }
+
+    u32 events_to_copy = (event_queue_count < max_events) ? event_queue_count : max_events;
+    memcpy(out_events, event_queue, events_to_copy * sizeof(PlatformEvent));
+    event_queue_count = 0;
+
+    return events_to_copy;
+  }
+
+  b8 IsValidWindow(WindowHandle handle)
+  {
+    return ResolveWindow(handle) != nullptr;
+  }
+
+  b8 IsSameWindow(WindowHandle handle_a, WindowHandle handle_b)
+  {
+    return handle_a.index == handle_b.index && handle_a.generation == handle_b.generation;
   }
 
   static const char *class_name       = "AtreusWindow";
@@ -289,7 +311,7 @@ namespace Atreus
     WNDCLASSEXA window_class   = {};
     window_class.cbSize        = sizeof(window_class);
     window_class.style         = CS_HREDRAW | CS_VREDRAW | CS_OWNDC | CS_DBLCLKS;
-    window_class.lpfnWndProc   = Win32WndProc;
+    window_class.lpfnWndProc   = Win32_WndProc;
     window_class.hInstance     = GetModuleHandleA(nullptr);
     window_class.hCursor       = LoadCursor(nullptr, IDC_ARROW);
     window_class.lpszClassName = class_name;
@@ -300,7 +322,7 @@ namespace Atreus
       class_registered = true;
     }
 
-    Win32Window *window = AllocWin32Window();
+    Win32_Window *window = AllocateWin32Window();
     if (window == nullptr) return false;
 
     DWORD dwStyle = WS_OVERLAPPEDWINDOW;
@@ -362,7 +384,7 @@ namespace Atreus
 
   void DestroyWindow(WindowHandle *handle)
   {
-    Win32Window *window = ResolveWindow(*handle);
+    Win32_Window *window = ResolveWindow(*handle);
     if (window == nullptr) return;
 
     if (window && window->hwnd) ::DestroyWindow(window->hwnd);
@@ -371,30 +393,9 @@ namespace Atreus
     *handle = InvalidWindowHandle;
   }
 
-  PlatformEventBuffer PollEvents()
-  {
-    MSG Msg;
-    while (PeekMessageA(&Msg, nullptr, 0, 0, PM_REMOVE))
-    {
-      if (Msg.message == WM_QUIT)
-      {
-        PlatformEvent event = {};
-        event.type          = PlatformEventType::Quit;
-        event.window        = InvalidWindowHandle;
-        PushPlatformEvent(event);
-        continue;
-      }
-
-      TranslateMessage(&Msg);
-      DispatchMessageA(&Msg);
-    }
-
-    return DrainPlatformEvents();
-  }
-
   void SetWindowTitle(WindowHandle handle, const char *title)
   {
-    Win32Window *window = ResolveWindow(handle);
+    Win32_Window *window = ResolveWindow(handle);
     if (window == nullptr) return;
 
     SetWindowTextA(window->hwnd, title);
@@ -402,7 +403,7 @@ namespace Atreus
 
   void SetWindowSize(WindowHandle handle, u32 width, u32 height)
   {
-    Win32Window *window = ResolveWindow(handle);
+    Win32_Window *window = ResolveWindow(handle);
     if (window == nullptr) return;
 
     DWORD style = (DWORD)GetWindowLongA(window->hwnd, GWL_STYLE);
@@ -422,7 +423,7 @@ namespace Atreus
 
   void GetWindowSize(WindowHandle handle, u32 *out_width, u32 *out_height)
   {
-    Win32Window *window = ResolveWindow(handle);
+    Win32_Window *window = ResolveWindow(handle);
     if (window == nullptr) return;
 
     RECT rect;
@@ -435,7 +436,7 @@ namespace Atreus
 
   void SetWindowFullscreen(WindowHandle handle, b8 fullscreen)
   {
-    Win32Window *window = ResolveWindow(handle);
+    Win32_Window *window = ResolveWindow(handle);
     if (window == nullptr) return;
 
     if ((b8)window->fullscreen == fullscreen) return;
@@ -479,7 +480,7 @@ namespace Atreus
 
   b8 IsWindowFullscreen(WindowHandle handle)
   {
-    Win32Window *window = ResolveWindow(handle);
+    Win32_Window *window = ResolveWindow(handle);
     if (window == nullptr) return false;
 
     return window->fullscreen;
@@ -487,7 +488,7 @@ namespace Atreus
 
   void SetWindowBorderless(WindowHandle handle, b8 borderless)
   {
-    Win32Window *window = ResolveWindow(handle);
+    Win32_Window *window = ResolveWindow(handle);
     if (window == nullptr) return;
 
     DWORD style = borderless ? WS_POPUP : WS_OVERLAPPEDWINDOW;
@@ -505,7 +506,7 @@ namespace Atreus
 
   b8 IsWindowBorderless(WindowHandle handle)
   {
-    Win32Window *window = ResolveWindow(handle);
+    Win32_Window *window = ResolveWindow(handle);
     if (window == nullptr) return false;
 
     return window->borderless;
@@ -580,7 +581,7 @@ namespace Atreus
 
   MonitorInfo GetMonitorInfoForWindow(WindowHandle handle)
   {
-    Win32Window *window = ResolveWindow(handle);
+    Win32_Window *window = ResolveWindow(handle);
     if (window == nullptr) return {};
 
     HMONITOR hMonitor = MonitorFromWindow(window->hwnd, MONITOR_DEFAULTTONEAREST);
@@ -605,7 +606,7 @@ namespace Atreus
 
   void *GetNativeWindowHandle(WindowHandle handle)
   {
-    Win32Window *window = ResolveWindow(handle);
+    Win32_Window *window = ResolveWindow(handle);
     if (window == nullptr) return nullptr;
 
     return window ? window->hwnd : nullptr;

@@ -1,109 +1,169 @@
 #include "Atreus/Platform/Input.h"
 
 #include "Atreus/Platform/PlatformEvent.h"
-#include "Atreus/Platform/Window.h"
 
 #include <cstring>
 
 namespace Atreus
 {
-  void
-  UpdateInputState(InputState *state, const PlatformEventBuffer &events, WindowHandle target_window)
-  {
-    memset(state->keys_pressed, 0, sizeof(state->keys_pressed));
-    memset(state->keys_released, 0, sizeof(state->keys_released));
-    memset(state->mouse_pressed, 0, sizeof(state->mouse_pressed));
-    memset(state->mouse_released, 0, sizeof(state->mouse_released));
-    state->mouse_delta_x     = 0;
-    state->mouse_delta_y     = 0;
-    state->mouse_wheel_delta = 0;
+  static InputState input[MAX_WINDOWS];
 
-    for (u32 i = 0; i < events.buffer_size; ++i)
+  static InputState *ResolveInput(WindowHandle window)
+  {
+    if (!IsValidWindow(window)) return nullptr;
+    return &input[window.index];
+  }
+
+  void UpdateInput(WindowHandle window, const PlatformEvent *events, u32 event_count)
+  {
+    InputState *window_input = ResolveInput(window);
+
+    if (window_input == nullptr) return;
+
+    memcpy(
+        window_input->keys_down_previous, window_input->keys_down, sizeof(window_input->keys_down)
+    );
+
+    memcpy(
+        window_input->mouse_down_previous,
+        window_input->mouse_down,
+        sizeof(window_input->mouse_down)
+    );
+
+    window_input->mouse_delta_x = 0;
+    window_input->mouse_delta_y = 0;
+    window_input->scroll_delta  = 0;
+
+    for (u32 i = 0; i < event_count; ++i)
     {
-      const PlatformEvent &event = events.buffer[i];
-      if (!SameWindow(event.window, target_window)) continue;
+      PlatformEvent event = events[i];
+      if (!IsSameWindow(event.window, window)) continue;
 
       switch (event.type)
       {
-      case PlatformEventType::KeyPressed:
+      case PlatformEventType::KeyPress:
       {
-        u32 key = (u32)event.key_pressed.key;
-        // Windows re-sends WM_KEYDOWN while a key is held (auto-repeat); only
-        // count it as a fresh "pressed" edge if it wasn't already down.
-        if (!state->keys_held[key]) state->keys_pressed[key] = true;
-        state->keys_held[key] = true;
+        window_input->keys_down[(u8)event.key_press.key] = true;
         break;
       }
 
-      case PlatformEventType::KeyReleased:
+      case PlatformEventType::KeyRelease:
       {
-        u32 key                   = (u32)event.key_released.key;
-        state->keys_released[key] = true;
-        state->keys_held[key]     = false;
+        window_input->keys_down[(u8)event.key_release.key] = false;
+        break;
+      }
+
+      case PlatformEventType::MouseButtonPress:
+      {
+        window_input->mouse_down[(u8)event.mouse_button_press.button] = true;
+        break;
+      }
+
+      case PlatformEventType::MouseButtonRelease:
+      {
+        window_input->mouse_down[(u8)event.mouse_button_release.button] = false;
         break;
       }
 
       case PlatformEventType::MouseMove:
       {
-        state->mouse_x = event.mouse_move.x;
-        state->mouse_y = event.mouse_move.y;
-        state->mouse_delta_x += event.mouse_move.delta_x;
-        state->mouse_delta_y += event.mouse_move.delta_y;
-        break;
-      }
-
-      case PlatformEventType::MouseButtonPressed:
-      {
-        u32 button = (u32)event.mouse_button_pressed.button;
-        if (!state->mouse_held[button]) state->mouse_pressed[button] = true;
-        state->mouse_held[button] = true;
-        break;
-      }
-
-      case PlatformEventType::MouseButtonReleased:
-      {
-        u32 button                    = (u32)event.mouse_button_released.button;
-        state->mouse_released[button] = true;
-        state->mouse_held[button]     = false;
+        window_input->mouse_x = event.mouse_move.x;
+        window_input->mouse_y = event.mouse_move.y;
+        window_input->mouse_delta_x += event.mouse_move.delta_x;
+        window_input->mouse_delta_y += event.mouse_move.delta_y;
         break;
       }
 
       case PlatformEventType::MouseWheel:
       {
-        state->mouse_wheel_delta += event.mouse_wheel.delta;
+        window_input->scroll_delta += event.mouse_wheel.delta;
         break;
       }
 
-      case PlatformEventType::FocusChanged:
+      case PlatformEventType::FocusChange:
       {
-        if (!event.focus_changed.focused)
+        if (event.focus_change.focused == false)
         {
-          for (u32 i = 0; i < (u32)Key::COUNT; ++i)
-          {
-            if (state->keys_held[i] || state->keys_pressed[i])
-            {
-              state->keys_released[i] = true;
-              state->keys_held[i]     = false;
-              state->keys_pressed[i]  = false;
-            }
-          }
-
-          for (u32 i = 0; i < (u32)MouseButton::COUNT; ++i)
-          {
-            if (state->mouse_held[i] || state->mouse_pressed[i])
-            {
-              state->mouse_released[i] = true;
-              state->mouse_held[i]     = false;
-              state->mouse_pressed[i]  = false;
-            }
-          }
+          memset(window_input->keys_down, 0, sizeof(window_input->keys_down));
+          memset(window_input->mouse_down, 0, sizeof(window_input->mouse_down));
         }
         break;
       }
-
-      default:
-        break;
       }
     }
+  }
+
+  b8 IsKeyDown(WindowHandle window, Key key)
+  {
+    InputState *window_input = ResolveInput(window);
+    if (window_input == nullptr) return false;
+
+    return window_input->keys_down[(u8)key];
+  }
+
+  b8 WasKeyPressed(WindowHandle window, Key key)
+  {
+    InputState *window_input = ResolveInput(window);
+    if (window_input == nullptr) return false;
+
+    return !window_input->keys_down_previous[(u8)key] && window_input->keys_down[(u8)key];
+  }
+
+  b8 WasKeyReleased(WindowHandle window, Key key)
+  {
+    InputState *window_input = ResolveInput(window);
+    if (window_input == nullptr) return false;
+
+    return window_input->keys_down_previous[(u8)key] && !window_input->keys_down[(u8)key];
+  }
+
+  b8 IsMouseButtonDown(WindowHandle window, MouseButton button)
+  {
+    InputState *window_input = ResolveInput(window);
+    if (window_input == nullptr) return false;
+
+    return window_input->mouse_down[(u8)button];
+  }
+
+  b8 WasMouseButtonPressed(WindowHandle window, MouseButton button)
+  {
+    InputState *window_input = ResolveInput(window);
+    if (window_input == nullptr) return false;
+
+    return !window_input->mouse_down_previous[(u8)button] && window_input->mouse_down[(u8)button];
+  }
+
+  b8 WasMouseButtonReleased(WindowHandle window, MouseButton button)
+  {
+    InputState *window_input = ResolveInput(window);
+    if (window_input == nullptr) return false;
+
+    return window_input->mouse_down_previous[(u8)button] && !window_input->mouse_down[(u8)button];
+  }
+
+  void GetMousePosition(WindowHandle window, i32 *out_x, i32 *out_y)
+  {
+    InputState *window_input = ResolveInput(window);
+    if (window_input == nullptr) return;
+
+    if (out_x) *out_x = window_input->mouse_x;
+    if (out_y) *out_y = window_input->mouse_y;
+  }
+
+  void GetMouseDelta(WindowHandle window, i32 *out_delta_x, i32 *out_delta_y)
+  {
+    InputState *window_input = ResolveInput(window);
+    if (window_input == nullptr) return;
+
+    if (out_delta_x) *out_delta_x = window_input->mouse_delta_x;
+    if (out_delta_y) *out_delta_y = window_input->mouse_delta_y;
+  }
+
+  i32 GetScrollDelta(WindowHandle window)
+  {
+    InputState *window_input = ResolveInput(window);
+    if (window_input == nullptr) return 0;
+
+    return window_input->scroll_delta;
   }
 }

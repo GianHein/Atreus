@@ -15,7 +15,7 @@ namespace Atreus
   using i64 = int64_t;
 
   using b8  = bool;
-  using b32 = int32_t;
+  using b32 = uint32_t;
 
   using f32 = float;
   using f64 = double;

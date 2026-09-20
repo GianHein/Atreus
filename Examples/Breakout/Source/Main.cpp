@@ -8,22 +8,24 @@ using namespace Atreus;
 
 #include <cstdio>
 
-void ProcessInput(WindowHandle window, b8 &is_running, InputState &input)
+void ProcessInput(WindowHandle window, b8 &is_running)
 {
-  PlatformEventBuffer frame_events = PollEvents();
+  constexpr u32 max_frame_events = 512;
+  PlatformEvent frame_events[max_frame_events];
+  u32           event_count = PollEvents(frame_events, max_frame_events);
 
-  for (u32 i = 0; i < frame_events.buffer_size; ++i)
+  for (u32 i = 0; i < event_count; ++i)
   {
-    const PlatformEvent &event = frame_events.buffer[i];
+    const PlatformEvent &event = frame_events[i];
     if (event.type == PlatformEventType::WindowClose || event.type == PlatformEventType::Quit)
     {
       is_running = false;
     }
   }
 
-  UpdateInputState(&input, frame_events, window);
+  UpdateInput(window, frame_events, event_count);
 
-  if (IsKeyPressed(input, Key::Escape))
+  if (WasKeyPressed(window, Key::Escape))
   {
     is_running = false;
   }
@@ -65,8 +67,6 @@ int main(int argc, char **argv)
   const u64 fixed_delta_time = (ticks_per_second + 144 / 2) / 144;
   u64       last_frame_time  = GetTicks();
 
-  InputState frame_input = {};
-
   // Diagnostic: how many outer-loop iterations we manage per second, i.e. the
   // uncapped frame rate the loop could sustain (no render, no vsync yet).
   u64 loop_iterations   = 0;
@@ -74,7 +74,7 @@ int main(int argc, char **argv)
 
   while (is_running)
   {
-    ProcessInput(window, is_running, frame_input);
+    ProcessInput(window, is_running);
     Update(accumulator, last_frame_time, fixed_delta_time);
 
     ++loop_iterations;

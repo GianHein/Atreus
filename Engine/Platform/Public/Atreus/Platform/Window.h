@@ -4,6 +4,8 @@
 
 namespace Atreus
 {
+  constexpr u32 MAX_WINDOWS = 8;
+
   struct WindowHandle
   {
     u32 index      = UINT32_MAX;
@@ -12,8 +14,8 @@ namespace Atreus
 
   constexpr WindowHandle InvalidWindowHandle = {UINT32_MAX, UINT32_MAX};
 
-  b8 IsValidWindowHandle(WindowHandle handle);
-  b8 SameWindow(WindowHandle a, WindowHandle b);
+  b8 IsValidWindow(WindowHandle handle);
+  b8 IsSameWindow(WindowHandle handle_a, WindowHandle handle_b);
 
   struct MonitorInfo
   {
@@ -49,7 +51,7 @@ namespace Atreus
   b8   IsWindowBorderless(WindowHandle handle);
 
   u32         GetMonitorCount();
-  MonitorInfo GetMonitorInfo(u32 index);
+  MonitorInfo GetMonitorInfo(u32 monitor_index);
   MonitorInfo GetMonitorInfoForWindow(WindowHandle handle);
 
   void *GetNativeWindowHandle(WindowHandle handle);

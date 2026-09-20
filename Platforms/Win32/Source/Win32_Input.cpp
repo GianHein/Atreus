@@ -1,10 +1,9 @@
 #include "Atreus/Platform/Input.h"
+#include "Win32_TranslateVK.h"
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-
-#include "Win32Internal.h"
 
 #include <Windows.h>
 
@@ -13,7 +12,7 @@ namespace Atreus
   static Key vk_to_key[256];
   static b8  vk_to_key_initialized = false;
 
-  static void InitVkToKeyTable()
+  static void InitializeVKToKey()
   {
     for (u32 i = 0; i < 256; ++i)
     {
@@ -41,8 +40,6 @@ namespace Atreus
     vk_to_key[VK_DIVIDE]   = Key::NumpadDiv;
     vk_to_key[VK_DECIMAL]  = Key::NumpadDecimal;
 
-    // NOTE: VK_RETURN is handled separately in VkToKey() to distinguish NumpadEnter
-
     for (u32 i = 0; i <= 11; ++i)
     {
       vk_to_key[VK_F1 + i] = (Key)((u32)Key::F1 + i);
@@ -62,9 +59,6 @@ namespace Atreus
     vk_to_key[VK_RIGHT]  = Key::Right;
     vk_to_key[VK_UP]     = Key::Up;
     vk_to_key[VK_DOWN]   = Key::Down;
-
-    // VK_SHIFT/VK_CONTROL/VK_MENU are also handled specially in VkToKey() for the
-    // left/right split; these entries are just a sane fallback for the generic codes
 
     vk_to_key[VK_SHIFT]    = Key::LeftShift;
     vk_to_key[VK_LSHIFT]   = Key::LeftShift;
@@ -100,30 +94,30 @@ namespace Atreus
     vk_to_key_initialized = true;
   }
 
-  Key VkToKey(WPARAM wParam, LPARAM lParam)
+  Key TranslateVK(WPARAM wParam, LPARAM lParam)
   {
-    if (!vk_to_key_initialized) InitVkToKeyTable();
+    if (!vk_to_key_initialized) InitializeVKToKey();
 
-    // Bit 24 of lParam is the "extended key" flag, right Ctrl/Alt and the numpad
-    // Enter key set it; their left/main counterparts don't
-    const b8 extended = (lParam & (1 << 24)) != 0;
+    b8   extended_key = ((lParam >> 24) & 1);
+    UINT scancode     = (lParam >> 16) & 0xFF;
 
     switch (wParam)
     {
     case VK_CONTROL:
-      return extended ? Key::RightCtrl : Key::LeftCtrl;
+      return extended_key ? Key::RightCtrl : Key::LeftCtrl;
+
     case VK_MENU:
-      return extended ? Key::RightAlt : Key::LeftAlt;
+      return extended_key ? Key::RightAlt : Key::LeftAlt;
+
     case VK_RETURN:
-      return extended ? Key::NumpadEnter : Key::Enter;
+      return extended_key ? Key::NumpadEnter : Key::Enter;
 
     case VK_SHIFT:
     {
-      // Windows doesn't set the extended bit differently for left/right shift,
-      // so left/right has to be recovered from the scan code instead
-      UINT scancode = (lParam >> 16) & 0xFF;
-      return (MapVirtualKeyA(scancode, MAPVK_VSC_TO_VK_EX) == VK_RSHIFT) ? Key::RightShift
-                                                                         : Key::LeftShift;
+      return (
+          MapVirtualKeyA(scancode, MAPVK_VSC_TO_VK_EX) == VK_LSHIFT ? Key::LeftShift
+                                                                    : Key::RightShift
+      );
     }
 
     default:

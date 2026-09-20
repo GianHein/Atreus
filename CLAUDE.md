@@ -73,8 +73,3 @@ We are striving for excellence, not mediocrity. That means:
   just pick one for them without explanation.
 - Hold the user to the standard of someone trying to get hired as an engine
   programmer at a AAA studio, and mentor them accordingly.
-
-## Engine project roadmap
-
-The roadmap can be found in the [TODO.md](TODO.md) file. More, potentially also more
-immediately relevant information, can be found in the [FIX.md](FIX.md) file.

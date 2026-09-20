@@ -5,7 +5,7 @@
 
 namespace Atreus
 {
-  struct PlatformEventBuffer;
+  struct PlatformEvent;
 
   enum class Key : u8
   {
@@ -151,92 +151,32 @@ namespace Atreus
 
   struct InputState
   {
-    b8 keys_pressed[(u32)Key::COUNT]  = {};
-    b8 keys_held[(u32)Key::COUNT]     = {};
-    b8 keys_released[(u32)Key::COUNT] = {};
+    b8 keys_down[static_cast<usize>(Key::COUNT)];
+    b8 keys_down_previous[static_cast<usize>(Key::COUNT)];
 
-    b8 mouse_pressed[(u32)MouseButton::COUNT]  = {};
-    b8 mouse_held[(u32)MouseButton::COUNT]     = {};
-    b8 mouse_released[(u32)MouseButton::COUNT] = {};
+    b8 mouse_down[static_cast<usize>(MouseButton::COUNT)];
+    b8 mouse_down_previous[static_cast<usize>(MouseButton::COUNT)];
 
-    i32 mouse_x           = 0;
-    i32 mouse_y           = 0;
-    i32 mouse_delta_x     = 0;
-    i32 mouse_delta_y     = 0;
-    i32 mouse_wheel_delta = 0;
+    i32 mouse_x;
+    i32 mouse_y;
+
+    i32 mouse_delta_x;
+    i32 mouse_delta_y;
+
+    i32 scroll_delta;
   };
 
-  void UpdateInputState(
-      InputState *state, const PlatformEventBuffer &events, WindowHandle target_window
-  );
+  void UpdateInput(WindowHandle window, const PlatformEvent *events, u32 event_count);
 
-  inline b8 IsKeyPressed(const InputState &state, Key key)
-  {
-    return state.keys_pressed[(u32)key];
-  }
+  b8 IsKeyDown(WindowHandle window, Key key);
+  b8 WasKeyPressed(WindowHandle window, Key key);
+  b8 WasKeyReleased(WindowHandle window, Key key);
 
-  inline b8 IsKeyHeld(const InputState &state, Key key)
-  {
-    return state.keys_held[(u32)key];
-  }
+  b8 IsMouseButtonDown(WindowHandle window, MouseButton button);
+  b8 WasMouseButtonPressed(WindowHandle window, MouseButton button);
+  b8 WasMouseButtonReleased(WindowHandle window, MouseButton button);
 
-  inline b8 IsKeyReleased(const InputState &state, Key key)
-  {
-    return state.keys_released[(u32)key];
-  }
-
-  inline b8 IsMouseButtonPressed(const InputState &state, MouseButton button)
-  {
-    return state.mouse_pressed[(u32)button];
-  }
-
-  inline b8 IsMouseButtonHeld(const InputState &state, MouseButton button)
-  {
-    return state.mouse_held[(u32)button];
-  }
-
-  inline b8 IsMouseButtonReleased(const InputState &state, MouseButton button)
-  {
-    return state.mouse_released[(u32)button];
-  }
-
-  inline void GetMousePosition(const InputState &state, i32 *x, i32 *y)
-  {
-    *x = state.mouse_x;
-    *y = state.mouse_y;
-  }
-
-  inline void GetMouseDelta(const InputState &state, i32 *delta_x, i32 *delta_y)
-  {
-    *delta_x = state.mouse_delta_x;
-    *delta_y = state.mouse_delta_y;
-  }
-
-  inline i32 GetMouseWheelDelta(const InputState &state)
-  {
-    return state.mouse_wheel_delta;
-  }
-
-  inline void ResetInputState(InputState *state)
-  {
-    for (u32 i = 0; i < (u32)Key::COUNT; ++i)
-    {
-      state->keys_pressed[i]  = false;
-      state->keys_held[i]     = false;
-      state->keys_released[i] = false;
-    }
-
-    for (u32 i = 0; i < (u32)MouseButton::COUNT; ++i)
-    {
-      state->mouse_pressed[i]  = false;
-      state->mouse_held[i]     = false;
-      state->mouse_released[i] = false;
-    }
-
-    state->mouse_x           = 0;
-    state->mouse_y           = 0;
-    state->mouse_delta_x     = 0;
-    state->mouse_delta_y     = 0;
-    state->mouse_wheel_delta = 0;
-  }
+  void GetMousePosition(WindowHandle window, i32 *out_x, i32 *out_y);
+  void GetMouseDelta(WindowHandle window, i32 *out_delta_x, i32 *out_delta_y);
+  i32  GetScrollDelta(WindowHandle window);
 }

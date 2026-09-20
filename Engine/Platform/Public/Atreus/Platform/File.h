@@ -18,41 +18,28 @@ namespace Atreus
     ReadWrite
   };
 
-  enum class FileShareMode : u8
-  {
-    None = 0,
-    Read,
-    Write,
-    ReadWrite
-  };
-
   enum class FileOpenMode : u8
   {
     OpenExisting = 0,
     CreateAlways,
     CreateNew,
-    OpenAlways,
+    OpenAlways
   };
 
   enum class FileSeekOrigin : u8
   {
     Begin = 0,
+    Current,
     End
   };
 
   b8 FileExists(const char *path);
+  b8 GetFileSize(FileHandle handle, u64 *out_size);
 
-  b8 OpenFile(
-      const char    *path,
-      FileAccessMode access,
-      FileShareMode  share,
-      FileOpenMode   mode,
-      FileHandle    *out_handle
-  );
-
+  b8   OpenFile(const char *path, FileAccessMode access, FileOpenMode mode, FileHandle *out_handle);
   void CloseFile(FileHandle *handle);
 
-  b8 ReadFile(
+  b8 ReadFileBytes(
       FileHandle     handle,
       FileSeekOrigin origin,
       i64            distance,
@@ -61,7 +48,7 @@ namespace Atreus
       u64           *out_bytes_read
   );
 
-  b8 WriteFile(
+  b8 WriteFileBytes(
       FileHandle     handle,
       FileSeekOrigin origin,
       i64            distance,
@@ -69,6 +56,4 @@ namespace Atreus
       u64            size,
       u64           *out_bytes_written
   );
-
-  b8 GetFileSize(FileHandle handle, u64 *out_size);
 }

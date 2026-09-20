@@ -10,23 +10,27 @@ namespace Atreus
   {
     None = 0,
     Quit,
-    KeyPressed,
-    KeyReleased,
+    KeyPress,
+    KeyRelease,
     MouseMove,
-    MouseButtonPressed,
-    MouseButtonReleased,
+    MouseButtonPress,
+    MouseButtonRelease,
     MouseWheel,
     WindowResize,
     WindowClose,
-    FocusChanged
+    FocusChange
   };
 
-  struct KeyPressedData
+  struct QuitData
+  {
+  };
+
+  struct KeyPressData
   {
     Key key;
   };
 
-  struct KeyReleasedData
+  struct KeyReleaseData
   {
     Key key;
   };
@@ -39,12 +43,12 @@ namespace Atreus
     i32 delta_y;
   };
 
-  struct MouseButtonPressedData
+  struct MouseButtonPressData
   {
     MouseButton button;
   };
 
-  struct MouseButtonReleasedData
+  struct MouseButtonReleaseData
   {
     MouseButton button;
   };
@@ -60,7 +64,11 @@ namespace Atreus
     u32 height;
   };
 
-  struct FocusChangedData
+  struct WindowCloseData
+  {
+  };
+
+  struct FocusChangeData
   {
     b8 focused;
   };
@@ -69,26 +77,21 @@ namespace Atreus
   {
     PlatformEventType type;
     WindowHandle      window;
+
     union
     {
-      KeyPressedData          key_pressed;
-      KeyReleasedData         key_released;
-      MouseMoveData           mouse_move;
-      MouseButtonPressedData  mouse_button_pressed;
-      MouseButtonReleasedData mouse_button_released;
-      MouseWheelData          mouse_wheel;
-      WindowResizeData        window_resize;
-      FocusChangedData        focus_changed;
+      QuitData               quit;
+      KeyPressData           key_press;
+      KeyReleaseData         key_release;
+      MouseMoveData          mouse_move;
+      MouseButtonPressData   mouse_button_press;
+      MouseButtonReleaseData mouse_button_release;
+      MouseWheelData         mouse_wheel;
+      WindowResizeData       window_resize;
+      WindowCloseData        window_close;
+      FocusChangeData        focus_change;
     };
   };
 
-  struct PlatformEventBuffer
-  {
-    PlatformEvent *buffer      = nullptr;
-    u32            buffer_size = 0;
-  };
-
-  PlatformEventBuffer PollEvents();
-  void                PushPlatformEvent(PlatformEvent event);
-  PlatformEventBuffer DrainPlatformEvents();
+  u32 PollEvents(PlatformEvent *out_events, u32 max_events);
 }
