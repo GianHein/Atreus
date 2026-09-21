@@ -21,6 +21,8 @@ namespace Atreus
   Log(LogLevel level, const char *file, i32 line, const char *function, const char *message, ...);
 }
 
+#define LOG_LEVEL_THRESHOLD 0 // 0 = Trace, Debug, Info, Warn, Error, Fatal
+
 #if LOG_LEVEL_THRESHOLD <= 5
 #define ATR_LOG_FATAL(message, ...)                                                                \
   ::Atreus::Log(Atreus::LogLevel::Fatal, __FILE__, __LINE__, __func__, message, ##__VA_ARGS__)

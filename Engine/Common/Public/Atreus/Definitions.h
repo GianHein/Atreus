@@ -30,5 +30,3 @@ namespace Atreus
     return a < b ? a : b;
   }
 }
-
-#define LOG_LEVEL_THRESHOLD 0 // 0 = Trace, Debug, Info, Warn, Error, Fatal
