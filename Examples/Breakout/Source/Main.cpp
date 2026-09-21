@@ -1,4 +1,5 @@
 #include <Atreus/Definitions.h>
+#include <Atreus/Log.h>
 #include <Atreus/Platform/Input.h>
 #include <Atreus/Platform/PlatformEvent.h>
 #include <Atreus/Platform/Time.h>
@@ -48,6 +49,15 @@ int main(int argc, char **argv)
 {
   b8 is_running = true;
 
+  InitializeLog();
+
+  ATR_LOG_TRACE("The quick brown fox jumped over the lazy dog");
+  ATR_LOG_DEBUG("The quick brown fox jumped over the lazy dog");
+  ATR_LOG_INFO("The quick brown fox jumped over the lazy dog");
+  ATR_LOG_WARN("The quick brown fox jumped over the lazy dog");
+  ATR_LOG_ERROR("The quick brown fox jumped over the lazy dog");
+  ATR_LOG_FATAL("The quick brown fox jumped over the lazy dog");
+
   WindowHandle window;
 
   if (!CreateWindow(
@@ -84,7 +94,7 @@ int main(int argc, char **argv)
     if (elapsed_ticks >= ticks_per_second)
     {
       f64 iterations_per_second = (f64)loop_iterations * (f64)ticks_per_second / (f64)elapsed_ticks;
-      printf("loop: %.0f iterations/sec\n", iterations_per_second);
+      ATR_LOG_TRACE("Loop: %.0f iterations/sec", iterations_per_second);
 
       loop_iterations   = 0;
       last_report_ticks = now;
@@ -92,5 +102,6 @@ int main(int argc, char **argv)
   }
 
   DestroyWindow(&window);
+  ShutdownLog();
   return 0;
 }

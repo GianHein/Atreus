@@ -24,4 +24,11 @@ namespace Atreus
   using isize = intptr_t;
 
   using byte = u8;
+
+  inline u64 min(u64 a, u64 b)
+  {
+    return a < b ? a : b;
+  }
 }
+
+#define LOG_LEVEL_THRESHOLD 0 // 0 = Trace, Debug, Info, Warn, Error, Fatal
