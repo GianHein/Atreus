@@ -56,4 +56,6 @@ namespace Atreus
       u64            size,
       u64           *out_bytes_written
   );
+
+  void FlushFile(FileHandle handle);
 }

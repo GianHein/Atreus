@@ -161,4 +161,10 @@ namespace Atreus
 
     return true;
   }
+
+  void FlushFile(FileHandle handle)
+  {
+    if (handle.handle == nullptr) return;
+    FlushFileBuffers((HANDLE)handle.handle);
+  }
 }
