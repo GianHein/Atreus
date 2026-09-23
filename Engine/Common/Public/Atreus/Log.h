@@ -22,6 +22,7 @@ namespace Atreus
 }
 
 #define LOG_LEVEL_THRESHOLD 0 // 0 = Trace, Debug, Info, Warn, Error, Fatal
+#define ASSERTIONS_ENABLED 1
 
 #if LOG_LEVEL_THRESHOLD <= 5
 #define ATR_LOG_FATAL(message, ...)                                                                \
@@ -63,4 +64,27 @@ namespace Atreus
   ::Atreus::Log(Atreus::LogLevel::Trace, __FILE__, __LINE__, __func__, message, ##__VA_ARGS__)
 #else
 #define ATR_LOG_TRACE(...) ((void)0)
+#endif
+
+#if _MSC_VER
+#include <intrin.h>
+#define ATR_DEBUG_BREAK() __debugbreak()
+#else
+#define ATR_DEBUG_BREAK() __builtin_trap()
+#endif
+
+#if ASSERTIONS_ENABLED == 1
+#define ATR_ASSERT(expression, message, ...)                                                                                     \
+  do                                                                                                                             \
+  {                                                                                                                              \
+    if (!(expression))                                                                                                           \
+    {                                                                                                                            \
+      ::Atreus::Log(                                                                                                             \
+          ::Atreus::LogLevel::Fatal, __FILE__, __LINE__, __func__, "Assertion failed (%s): " message, #expression, ##__VA_ARGS__ \
+      );                                                                                                                         \
+      ATR_DEBUG_BREAK();                                                                                                         \
+    }                                                                                                                            \
+  } while (0)
+#else
+#define ATR_ASSERT(...) ((void)0)
 #endif
