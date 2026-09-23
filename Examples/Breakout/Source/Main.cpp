@@ -51,13 +51,6 @@ int main(int argc, char **argv)
 
   InitializeLog();
 
-  ATR_LOG_TRACE("The quick brown fox jumped over the lazy dog");
-  ATR_LOG_DEBUG("The quick brown fox jumped over the lazy dog");
-  ATR_LOG_INFO("The quick brown fox jumped over the lazy dog");
-  ATR_LOG_WARN("The quick brown fox jumped over the lazy dog");
-  ATR_LOG_ERROR("The quick brown fox jumped over the lazy dog");
-  ATR_LOG_FATAL("The quick brown fox jumped over the lazy dog");
-
   WindowHandle window;
 
   if (!CreateWindow(
@@ -94,7 +87,6 @@ int main(int argc, char **argv)
     if (elapsed_ticks >= ticks_per_second)
     {
       f64 iterations_per_second = (f64)loop_iterations * (f64)ticks_per_second / (f64)elapsed_ticks;
-      ATR_LOG_TRACE("Loop: %.0f iterations/sec", iterations_per_second);
 
       loop_iterations   = 0;
       last_report_ticks = now;

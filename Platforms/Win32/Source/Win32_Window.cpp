@@ -4,6 +4,7 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 
+#include "Atreus/Log.h"
 #include "Atreus/Platform/PlatformEvent.h"
 #include "Win32_TranslateVK.h"
 
@@ -41,10 +42,13 @@ namespace Atreus
       {
         window_pool_used[i]  = true;
         window_pool[i].index = i;
+
+        ATR_LOG_DEBUG("Allocated window on slot %u", i);
         return &window_pool[i];
       }
     }
 
+    ATR_LOG_ERROR("Window pool exhausted, %u windows reached", MAX_WINDOWS);
     return nullptr;
   }
 
@@ -60,9 +64,15 @@ namespace Atreus
         window_pool_used[i] = false;
         window_generations[i]++;
 
+        ATR_LOG_DEBUG("Freed window on slot %u", i);
         return;
       }
     }
+
+    ATR_ASSERT(
+        false,
+        "Tried to free Win32_Window using a pointer that didn't come from AllocateWin32Window"
+    );
   }
 
   static Win32_Window *ResolveWindow(WindowHandle handle)
@@ -80,7 +90,16 @@ namespace Atreus
 
   static void PushEvent(const PlatformEvent &event)
   {
-    if (event_queue_count >= MAX_PLATFORM_EVENTS) return;
+    if (event_queue_count >= MAX_PLATFORM_EVENTS)
+    {
+      ATR_LOG_WARN(
+          "Platform event queue exhausted, dropping event of type %u from window at slot %u",
+          event.type,
+          event.window.index
+      );
+
+      return;
+    }
     event_queue[event_queue_count++] = event;
   }
 
@@ -94,6 +113,9 @@ namespace Atreus
       {
         CREATESTRUCTA *create_struct = (CREATESTRUCTA *)lParam;
         window                       = (Win32_Window *)create_struct->lpCreateParams;
+
+        ATR_ASSERT(window != nullptr, "WM_NCCREATE with no window pointer in CreateParams");
+
         SetWindowLongPtrA(hwnd, GWLP_USERDATA, (LONG_PTR)window);
         window->hwnd = hwnd;
       }
@@ -288,6 +310,11 @@ namespace Atreus
 
     u32 events_to_copy = (event_queue_count < max_events) ? event_queue_count : max_events;
     memcpy(out_events, event_queue, events_to_copy * sizeof(PlatformEvent));
+    if (event_queue_count > max_events)
+      ATR_LOG_WARN(
+          "Truncating %u events due to insufficient out_events buffer size",
+          event_queue_count - max_events
+      );
     event_queue_count = 0;
 
     return events_to_copy;
@@ -308,6 +335,10 @@ namespace Atreus
 
   b8 CreateWindow(const WindowDescription &description, WindowHandle *out_handle)
   {
+    ATR_ASSERT(out_handle != nullptr, "out_handle required");
+    ATR_ASSERT(description.width != 0, "description.width must be non-zero");
+    ATR_ASSERT(description.height != 0, "description.height must be non-zero");
+
     WNDCLASSEXA window_class   = {};
     window_class.cbSize        = sizeof(window_class);
     window_class.style         = CS_HREDRAW | CS_VREDRAW | CS_OWNDC | CS_DBLCLKS;
@@ -318,7 +349,19 @@ namespace Atreus
 
     if (!class_registered)
     {
-      if (!RegisterClassExA(&window_class)) return false;
+      if (!RegisterClassExA(&window_class))
+      {
+        ATR_LOG_ERROR(
+            "Failed to register window class for window '%s' %ux%u through RegisterClassExA: %lu",
+            description.title,
+            description.width,
+            description.height,
+            GetLastError()
+        );
+
+        return false;
+      }
+
       class_registered = true;
     }
 
@@ -349,19 +392,13 @@ namespace Atreus
 
     if (!hwnd)
     {
-      char buffer[256];
-
-      snprintf(
-          buffer,
-          sizeof(buffer),
-          "[Atr::Platform] Window::Create - CreateWindowExA failed: '%s' %ux%u (err=%lu)\n",
+      ATR_LOG_ERROR(
+          "Failed to create window '%s' %ux%u through CreateWindowExA: %lu",
           description.title,
           description.width,
           description.height,
           GetLastError()
       );
-
-      OutputDebugStringA(buffer);
 
       FreeWin32Window(window);
       return false;
@@ -379,32 +416,54 @@ namespace Atreus
 
     out_handle->index      = window->index;
     out_handle->generation = window_generations[window->index];
+
+    ATR_LOG_INFO(
+        "Created window '%s' %ux%u for slot %u",
+        description.title,
+        description.width,
+        description.height,
+        out_handle->index
+    );
     return true;
   }
 
   void DestroyWindow(WindowHandle *handle)
   {
     Win32_Window *window = ResolveWindow(*handle);
-    if (window == nullptr) return;
+    if (window == nullptr)
+    {
+      ATR_LOG_WARN("Failed to resolve window from handle for slot %u", handle->index);
+      return;
+    }
 
     if (window && window->hwnd) ::DestroyWindow(window->hwnd);
     FreeWin32Window(window);
 
+    ATR_LOG_INFO("Destroyed window for slot %u", handle->index);
     *handle = InvalidWindowHandle;
   }
 
   void SetWindowTitle(WindowHandle handle, const char *title)
   {
     Win32_Window *window = ResolveWindow(handle);
-    if (window == nullptr) return;
+    if (window == nullptr)
+    {
+      ATR_LOG_WARN("Failed to resolve window from handle for slot %u", handle.index);
+      return;
+    }
 
     SetWindowTextA(window->hwnd, title);
+    ATR_LOG_DEBUG("Set title for window %u to %s", window->index, title);
   }
 
   void SetWindowSize(WindowHandle handle, u32 width, u32 height)
   {
     Win32_Window *window = ResolveWindow(handle);
-    if (window == nullptr) return;
+    if (window == nullptr)
+    {
+      ATR_LOG_WARN("Failed to resolve window from handle for slot %u", handle.index);
+      return;
+    }
 
     DWORD style = (DWORD)GetWindowLongA(window->hwnd, GWL_STYLE);
     RECT  rect  = {0, 0, (LONG)width, (LONG)height};
@@ -419,12 +478,17 @@ namespace Atreus
         rect.bottom - rect.top,
         SWP_NOMOVE | SWP_NOZORDER
     );
+    ATR_LOG_DEBUG("Set size for window %u to %ux%u", window->index, width, height);
   }
 
   void GetWindowSize(WindowHandle handle, u32 *out_width, u32 *out_height)
   {
     Win32_Window *window = ResolveWindow(handle);
-    if (window == nullptr) return;
+    if (window == nullptr)
+    {
+      ATR_LOG_WARN("Failed to resolve window from handle for slot %u", handle.index);
+      return;
+    }
 
     RECT rect;
 
@@ -437,7 +501,11 @@ namespace Atreus
   void SetWindowFullscreen(WindowHandle handle, b8 fullscreen)
   {
     Win32_Window *window = ResolveWindow(handle);
-    if (window == nullptr) return;
+    if (window == nullptr)
+    {
+      ATR_LOG_WARN("Failed to resolve window from handle for slot %u", handle.index);
+      return;
+    }
 
     if ((b8)window->fullscreen == fullscreen) return;
 
@@ -476,12 +544,17 @@ namespace Atreus
     }
 
     window->fullscreen = fullscreen;
+    ATR_LOG_DEBUG("Set window %u to fullscreen=%u", window->index, fullscreen);
   }
 
   b8 IsWindowFullscreen(WindowHandle handle)
   {
     Win32_Window *window = ResolveWindow(handle);
-    if (window == nullptr) return false;
+    if (window == nullptr)
+    {
+      ATR_LOG_WARN("Failed to resolve window from handle for slot %u", handle.index);
+      return false;
+    }
 
     return window->fullscreen;
   }
@@ -489,7 +562,11 @@ namespace Atreus
   void SetWindowBorderless(WindowHandle handle, b8 borderless)
   {
     Win32_Window *window = ResolveWindow(handle);
-    if (window == nullptr) return;
+    if (window == nullptr)
+    {
+      ATR_LOG_WARN("Failed to resolve window from handle for slot %u", handle.index);
+      return;
+    }
 
     DWORD style = borderless ? WS_POPUP : WS_OVERLAPPEDWINDOW;
     if ((b8)window->borderless == borderless) return;
@@ -501,13 +578,18 @@ namespace Atreus
         window->hwnd, nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED
     );
 
+    ATR_LOG_DEBUG("Set window %u to borderless=%u", window->index, borderless);
     window->borderless = borderless;
   }
 
   b8 IsWindowBorderless(WindowHandle handle)
   {
     Win32_Window *window = ResolveWindow(handle);
-    if (window == nullptr) return false;
+    if (window == nullptr)
+    {
+      ATR_LOG_WARN("Failed to resolve window from handle for slot %u", handle.index);
+      return false;
+    }
 
     return window->borderless;
   }
@@ -518,10 +600,25 @@ namespace Atreus
     u32         count        = 0;
   };
 
+  static b8 monitor_enum_truncation_logged = false;
+  static b8 shcore_unavailable_logged      = false;
+
   static BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC, LPRECT, LPARAM lParam)
   {
     MonitorEnumData *data = (MonitorEnumData *)lParam;
-    if (data->count >= 16) return FALSE;
+    if (data->count >= 16)
+    {
+      if (!monitor_enum_truncation_logged)
+      {
+        ATR_LOG_WARN(
+            "Truncating monitor enumeration, found %u monitors instead of the supported 16",
+            data->count
+        );
+        monitor_enum_truncation_logged = true;
+      }
+
+      return FALSE;
+    }
 
     MONITORINFOEXA monitor_info = {};
     monitor_info.cbSize         = sizeof(monitor_info);
@@ -552,6 +649,14 @@ namespace Atreus
         GetDpiForMonitor(hMonitor, 0, &dpi_x, &dpi_y);
       }
     }
+    else
+    {
+      if (!shcore_unavailable_logged)
+      {
+        ATR_LOG_WARN("shcore.dll unavailable, falling back to 96 DPI");
+        shcore_unavailable_logged = true;
+      }
+    }
 
     info.dpi          = dpi_x;
     info.scale_factor = (f32)dpi_x / 96.0f;
@@ -576,13 +681,23 @@ namespace Atreus
     MonitorEnumData data = EnumerateMonitors();
 
     if (index < data.count) return data.monitors[index];
+
+    ATR_LOG_WARN(
+        "Failed to retrieve MonitorInfo for monitor index %u, only %u monitors available",
+        index,
+        data.count
+    );
     return {};
   }
 
   MonitorInfo GetMonitorInfoForWindow(WindowHandle handle)
   {
     Win32_Window *window = ResolveWindow(handle);
-    if (window == nullptr) return {};
+    if (window == nullptr)
+    {
+      ATR_LOG_WARN("Failed to resolve window from handle for slot %u", handle.index);
+      return {};
+    }
 
     HMONITOR hMonitor = MonitorFromWindow(window->hwnd, MONITOR_DEFAULTTONEAREST);
 
@@ -601,13 +716,18 @@ namespace Atreus
       }
     }
 
+    ATR_LOG_WARN("Could not find a monitor for window %u", handle.index);
     return {};
   }
 
   void *GetNativeWindowHandle(WindowHandle handle)
   {
     Win32_Window *window = ResolveWindow(handle);
-    if (window == nullptr) return nullptr;
+    if (window == nullptr)
+    {
+      ATR_LOG_WARN("Failed to resolve window from handle for slot %u", handle.index);
+      return nullptr;
+    }
 
     return window ? window->hwnd : nullptr;
   }
