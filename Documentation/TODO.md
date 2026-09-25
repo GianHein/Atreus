@@ -1,8 +1,7 @@
 1. [/] Foundation
    - [x] Window and platform layer
    - [x] Input
-   - [ ] Console + file logging
-   - [ ] Tracy
+   - [x] Console + file logging
    - [ ] Minimal 2D renderer
    - [ ] Fixed timestep with accumulator
    - [ ] Basic collision
@@ -12,6 +11,7 @@
    - Stack allocator
    - Pool allocator
    - Tracking/debug allocator wrapper
+   - Tracy
    - Scoped CPU profiler
    - Array, SmallArray, Span
    - HashMap (open addressing)
