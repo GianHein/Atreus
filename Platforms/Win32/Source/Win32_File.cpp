@@ -4,6 +4,8 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 
+#include "Atreus/Log.h"
+
 #include <Windows.h>
 
 namespace Atreus
@@ -17,7 +19,11 @@ namespace Atreus
   b8 GetFileSize(FileHandle handle, u64 *out_size)
   {
     LARGE_INTEGER size;
-    if (!GetFileSizeEx((HANDLE)handle.handle, &size)) return false;
+    if (!GetFileSizeEx((HANDLE)handle.handle, &size))
+    {
+      ATR_LOG_ERROR("Failed to get file size using GetFileSizeEx: %lu", GetLastError());
+      return false;
+    }
 
     if (out_size) *out_size = (u64)size.QuadPart;
     return true;
@@ -37,7 +43,12 @@ namespace Atreus
       return GENERIC_READ | GENERIC_WRITE;
 
     default:
+    {
+      ATR_ASSERT(
+          false, "FileAccessMode fell through when trying to convert it to Win32DesiredAccess"
+      );
       return 0;
+    }
     }
   }
 
@@ -58,7 +69,13 @@ namespace Atreus
       return OPEN_ALWAYS;
 
     default:
+    {
+      ATR_ASSERT(
+          false, "FileOpenMode fell through when trying to convert it to Win32CreationDisposition"
+      );
+
       return 0;
+    }
     }
   }
 
@@ -88,7 +105,10 @@ namespace Atreus
     }
 
     default:
+    {
+      ATR_ASSERT(false, "FileSeekOrigin fell through when trying to convert it to Win32SeekOrigin");
       return false;
+    }
     }
   }
 
@@ -107,15 +127,20 @@ namespace Atreus
     if (handle == INVALID_HANDLE_VALUE)
     {
       *out_handle = InvalidFileHandle;
+
+      ATR_LOG_ERROR("Failed to open file '%s' through CreateFileA: %lu", path, GetLastError());
       return false;
     }
 
     out_handle->handle = handle;
+
+    ATR_LOG_INFO("Opened file '%s'", path);
     return true;
   }
 
   void CloseFile(FileHandle *handle)
   {
+    ATR_ASSERT(handle->handle != nullptr, "Cannot close a file using an empty handle");
     CloseHandle((HANDLE)handle->handle);
     *handle = InvalidFileHandle;
   }
@@ -129,13 +154,22 @@ namespace Atreus
       u64           *out_bytes_read
   )
   {
-    if (handle.handle == nullptr) return false;
+    ATR_ASSERT(handle.handle != nullptr, "Cannot read using empty file handle");
 
     DWORD bytes_read = 0;
 
-    if (!ToWin32SeekOrigin((HANDLE)handle.handle, origin, distance)) return false;
+    if (!ToWin32SeekOrigin((HANDLE)handle.handle, origin, distance))
+    {
+      ATR_LOG_ERROR("Failed to SeekOrigin using SetFilePointerEx: %lu", GetLastError());
+      return false;
+    }
 
-    if (!ReadFile((HANDLE)handle.handle, buffer, size, &bytes_read, NULL)) return false;
+    if (!ReadFile((HANDLE)handle.handle, buffer, size, &bytes_read, NULL))
+    {
+      ATR_LOG_ERROR("Could not read file data using ReadFile: %lu", GetLastError());
+      return false;
+    }
+
     if (out_bytes_read) *out_bytes_read = bytes_read;
 
     return true;
@@ -150,13 +184,22 @@ namespace Atreus
       u64           *out_bytes_written
   )
   {
-    if (handle.handle == nullptr) return false;
+    ATR_ASSERT(handle.handle != nullptr, "Cannot write using empty file handle");
 
     DWORD bytes_written = 0;
 
-    if (!ToWin32SeekOrigin((HANDLE)handle.handle, origin, distance)) return false;
+    if (!ToWin32SeekOrigin((HANDLE)handle.handle, origin, distance))
+    {
+      ATR_LOG_ERROR("Failed to SeekOrigin using SetFilePointerEx: %lu", GetLastError());
+      return false;
+    }
 
-    if (!WriteFile((HANDLE)handle.handle, buffer, size, &bytes_written, NULL)) return false;
+    if (!WriteFile((HANDLE)handle.handle, buffer, size, &bytes_written, NULL))
+    {
+      ATR_LOG_ERROR("Could not write file data using WriteFile: %lu", GetLastError());
+      return false;
+    }
+
     if (out_bytes_written) *out_bytes_written = bytes_written;
 
     return true;
@@ -165,6 +208,9 @@ namespace Atreus
   void FlushFile(FileHandle handle)
   {
     if (handle.handle == nullptr) return;
-    FlushFileBuffers((HANDLE)handle.handle);
+    if (!FlushFileBuffers((HANDLE)handle.handle))
+    {
+      ATR_LOG_ERROR("Failed to flush file using FlushFileBuffers");
+    }
   }
 }
