@@ -4,6 +4,8 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 
+#include "Atreus/Log.h"
+
 #include <Windows.h>
 
 namespace Atreus
@@ -24,6 +26,7 @@ namespace Atreus
 
   Ticks GetTicksPerSecond()
   {
+    ATR_ASSERT(performance_frequency.QuadPart != 0, "PerformanceFrequency may not be 0");
     return static_cast<Ticks>(performance_frequency.QuadPart);
   }
 

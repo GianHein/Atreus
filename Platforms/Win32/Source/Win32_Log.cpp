@@ -83,6 +83,8 @@ namespace Atreus
   void
   Log(LogLevel level, const char *file, i32 line, const char *function, const char *message, ...)
   {
+    ATR_ASSERT(message != nullptr, "Logs must have a message");
+
     va_list args;
     va_start(args, message);
     char formatted[MAX_LOG_MESSAGE_LENGTH];
@@ -92,7 +94,7 @@ namespace Atreus
     char     buffer[MAX_LOG_MESSAGE_LENGTH];
     DateTime log_time = GetLocalDateTime();
 
-    u32 written = snprintf(
+    i32 written = snprintf(
         buffer,
         sizeof(buffer),
         "[%04u-%02u-%02u %02u:%02u:%02u.%03u][%s][%s:%u %s] %s\n",
@@ -109,6 +111,12 @@ namespace Atreus
         function,
         formatted
     );
+
+    if (written < 0)
+    {
+      ATR_LOG_ERROR("Failed to format string using snprintf");
+      return;
+    }
 
     u32 buffer_size = (written > 0) ? min(written, sizeof(buffer) - 1) : 0;
 
