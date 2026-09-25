@@ -1,5 +1,6 @@
 #include "Atreus/Platform/Input.h"
 
+#include "Atreus/Log.h"
 #include "Atreus/Platform/PlatformEvent.h"
 
 #include <cstring>
@@ -16,9 +17,18 @@ namespace Atreus
 
   void UpdateInput(WindowHandle window, const PlatformEvent *events, u32 event_count)
   {
+    ATR_ASSERT(
+        !(event_count > 0 && events == nullptr),
+        "event_count is > 0 but did not pass a PlatformEvent buffer when calling UpdateInput"
+    );
+
     InputState *window_input = ResolveInput(window);
 
-    if (window_input == nullptr) return;
+    if (window_input == nullptr)
+    {
+      ATR_LOG_WARN("Failed to resolve window from handle for slot %u", window.index);
+      return;
+    }
 
     memcpy(
         window_input->keys_down_previous, window_input->keys_down, sizeof(window_input->keys_down)
