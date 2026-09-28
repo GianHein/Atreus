@@ -7,7 +7,8 @@
 
 using namespace Atreus;
 
-#include <cstdio>
+#include <Atreus/Graphics/Renderer2D.h>
+#include <glad/gl.h>
 
 void ProcessInput(WindowHandle window, b8 &is_running)
 {
@@ -30,6 +31,16 @@ void ProcessInput(WindowHandle window, b8 &is_running)
   {
     is_running = false;
   }
+
+  if (WasKeyPressed(window, Key::F11))
+  {
+    SetWindowFullscreen(window, !IsWindowFullscreen(window));
+  }
+
+  if (WasKeyPressed(window, Key::F10))
+  {
+    SetWindowBorderless(window, !IsWindowBorderless(window));
+  }
 }
 
 void Update(u64 &accumulator, u64 &last_frame_time, const u64 fixed_delta_time)
@@ -43,6 +54,12 @@ void Update(u64 &accumulator, u64 &last_frame_time, const u64 fixed_delta_time)
     // Update(fixed_delta_time);
     accumulator -= fixed_delta_time;
   }
+}
+
+void Render(WindowHandle window)
+{
+  ClearBackground(window, 1.0f, 0.0f, 1.0f, 1.0f);
+  Present(window);
 }
 
 int main(int argc, char **argv)
@@ -64,6 +81,8 @@ int main(int argc, char **argv)
       ))
     return 1;
 
+  InitializeGraphics(window);
+
   const u64 ticks_per_second = GetTicksPerSecond();
 
   u64       accumulator      = 0;
@@ -79,6 +98,7 @@ int main(int argc, char **argv)
   {
     ProcessInput(window, is_running);
     Update(accumulator, last_frame_time, fixed_delta_time);
+    Render(window);
 
     ++loop_iterations;
 
@@ -93,6 +113,7 @@ int main(int argc, char **argv)
     }
   }
 
+  ShutdownGraphics(window);
   DestroyWindow(&window);
   ShutdownLog();
   return 0;

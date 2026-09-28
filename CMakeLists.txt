@@ -10,11 +10,16 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin)
 # set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin)
 # set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin)
 
+
+add_subdirectory(ThirdParty/glad)
+
 add_subdirectory(Engine/Common)
+add_subdirectory(Engine/Graphics)
 add_subdirectory(Engine/Platform)
 
 add_library(Atreus SHARED
   $<TARGET_OBJECTS:AtreusPlatform>
+  $<TARGET_OBJECTS:AtreusGraphics>
   Examples/Breakout/Source/Main.cpp
 )
 
@@ -26,13 +31,14 @@ target_link_libraries(Atreus
   PUBLIC
     AtreusCommon
     AtreusPlatform
+    AtreusGraphics
 )
 
 include(CMakePackageConfigHelpers)
 
 set(ATREUS_INSTALL_CMAKEDIR ${CMAKE_INSTALL_LIBDIR}/cmake/Atreus)
 
-install(TARGETS Atreus AtreusCommon AtreusPlatform
+install(TARGETS Atreus AtreusCommon AtreusPlatform AtreusGraphics
   EXPORT AtreusTargets
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
