@@ -18,7 +18,7 @@ target_sources(AtreusPlatform PRIVATE ${ATREUS_PLATFORM_SOURCES} ${ATREUS_PLATFO
 target_include_directories(AtreusPlatform PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Private)
 
 if(WIN32)
-  set(ATREUS_PLATFORM_BACKEND_DIR ${CMAKE_SOURCE_DIR}/Platforms/Win32)
+  set(ATREUS_PLATFORM_BACKEND_DIR ${CMAKE_SOURCE_DIR}/Platforms/Win32/Platform)
 else()
   message(FATAL_ERROR "Atreus: AtreusPlatform has no backend implemented for this target platform")
 endif()
