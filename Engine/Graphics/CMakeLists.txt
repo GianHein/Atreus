@@ -30,5 +30,5 @@ target_sources(AtreusGraphics PRIVATE ${ATREUS_GRAPHICS_BACKEND_SOURCES} ${ATREU
 target_include_directories(AtreusGraphics PRIVATE ${ATREUS_GRAPHICS_BACKEND_DIR}/Source)
 
 if(WIN32)
-  target_link_libraries(AtreusGraphics PUBLIC user32 opengl32 glad)
+  target_link_libraries(AtreusGraphics PRIVATE user32 opengl32 $<BUILD_INTERFACE:glad>)
 endif()

@@ -1,4 +1,5 @@
 #include <Atreus/Definitions.h>
+#include <Atreus/Graphics/Renderer2D.h>
 #include <Atreus/Log.h>
 #include <Atreus/Platform/Input.h>
 #include <Atreus/Platform/PlatformEvent.h>
@@ -6,9 +7,6 @@
 #include <Atreus/Platform/Window.h>
 
 using namespace Atreus;
-
-#include <Atreus/Graphics/Renderer2D.h>
-#include <glad/gl.h>
 
 void ProcessInput(WindowHandle window, b8 &is_running)
 {
