@@ -567,6 +567,9 @@ namespace Atreus
     return window->fullscreen;
   }
 
+  // NOTE: Setting the window to borderless means also maximizing it, and reverting
+  // it back to a regular window means reverting it back to a maximized window.
+  // This is not necessarily ideal but for now it's enough
   void SetWindowBorderless(WindowHandle handle, b8 borderless)
   {
     Win32_Window *window = ResolveWindow(handle);
