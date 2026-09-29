@@ -54,25 +54,15 @@ namespace Atreus
 
   static void FreeWin32Window(Win32_Window *window)
   {
-    for (u32 i = 0; i < MAX_WINDOWS; ++i)
-    {
-      if (&window_pool[i] == window)
-      {
-        SetWindowLongPtrA(window->hwnd, GWLP_USERDATA, 0);
+    u32 index = window->index;
+    ATR_ASSERT(index < MAX_WINDOWS, "Tried to free a window with out-of-bounds index");
+    ATR_ASSERT(&window_pool[index] == window, "Tried to free an invalid Win32_Window");
 
-        *window             = {};
-        window_pool_used[i] = false;
-        window_generations[i]++;
+    *window                 = {};
+    window_pool_used[index] = false;
+    window_generations[index]++;
 
-        ATR_LOG_DEBUG("Freed window on slot %u", i);
-        return;
-      }
-    }
-
-    ATR_ASSERT(
-        false,
-        "Tried to free Win32_Window using a pointer that didn't come from AllocateWin32Window"
-    );
+    ATR_LOG_DEBUG("Freed window on slot %u", index);
   }
 
   static Win32_Window *ResolveWindow(WindowHandle handle)
@@ -437,6 +427,8 @@ namespace Atreus
 
   void DestroyWindow(WindowHandle *handle)
   {
+    ATR_ASSERT(handle != nullptr, "Cannot destroy window for empty handle");
+
     Win32_Window *window = ResolveWindow(*handle);
     if (window == nullptr)
     {
