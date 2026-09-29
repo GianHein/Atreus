@@ -330,14 +330,22 @@ namespace Atreus
     return handle_a.index == handle_b.index && handle_a.generation == handle_b.generation;
   }
 
-  static const char *class_name       = "AtreusWindow";
-  static b8          class_registered = false;
+  static b8          dpi_awareness_set = false;
+  static const char *class_name        = "AtreusWindow";
+  static b8          class_registered  = false;
 
   b8 CreateWindow(const WindowDescription &description, WindowHandle *out_handle)
   {
     ATR_ASSERT(out_handle != nullptr, "out_handle required");
     ATR_ASSERT(description.width != 0, "description.width must be non-zero");
     ATR_ASSERT(description.height != 0, "description.height must be non-zero");
+
+    if (!dpi_awareness_set)
+    {
+      if (!SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
+        ATR_LOG_WARN("Failed to set DPI awareness: %lu", GetLastError());
+      dpi_awareness_set = true;
+    }
 
     WNDCLASSEXA window_class   = {};
     window_class.cbSize        = sizeof(window_class);
@@ -571,12 +579,42 @@ namespace Atreus
     DWORD style = borderless ? WS_POPUP : WS_OVERLAPPEDWINDOW;
     if ((b8)window->borderless == borderless) return;
 
+    MONITORINFO monitor_info = {};
+    monitor_info.cbSize      = sizeof(monitor_info);
+    GetMonitorInfoA(MonitorFromWindow(window->hwnd, MONITOR_DEFAULTTONEAREST), &monitor_info);
+
     style |= WS_VISIBLE;
 
     SetWindowLongA(window->hwnd, GWL_STYLE, (LONG)style);
-    SetWindowPos(
-        window->hwnd, nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED
-    );
+
+    if (borderless)
+    {
+      ShowWindow(window->hwnd, SW_RESTORE);
+
+      SetWindowPos(
+          window->hwnd,
+          nullptr,
+          monitor_info.rcWork.left,
+          monitor_info.rcWork.top,
+          monitor_info.rcWork.right - monitor_info.rcWork.left,
+          monitor_info.rcWork.bottom - monitor_info.rcWork.top,
+          SWP_NOZORDER | SWP_FRAMECHANGED
+      );
+    }
+    else
+    {
+      SetWindowPos(
+          window->hwnd,
+          nullptr,
+          0,
+          0,
+          0,
+          0,
+          SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED
+      );
+
+      ShowWindow(window->hwnd, SW_SHOWMAXIMIZED);
+    }
 
     ATR_LOG_DEBUG("Set window %u to borderless=%u", window->index, borderless);
     window->borderless = borderless;
