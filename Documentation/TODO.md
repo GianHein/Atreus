@@ -2,7 +2,7 @@
    - [x] Window and platform layer
    - [x] Input
    - [x] Console + file logging
-   - [ ] Minimal 2D renderer
+   - [/] Minimal 2D renderer
    - [ ] Fixed timestep with accumulator
    - [ ] Basic collision
    - [ ] Small finished game shipped as a zip

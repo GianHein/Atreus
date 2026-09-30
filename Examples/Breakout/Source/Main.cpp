@@ -17,9 +17,18 @@ void ProcessInput(WindowHandle window, b8 &is_running)
   for (u32 i = 0; i < event_count; ++i)
   {
     const PlatformEvent &event = frame_events[i];
-    if (event.type == PlatformEventType::WindowClose || event.type == PlatformEventType::Quit)
+
+    switch (event.type)
+    {
+    case PlatformEventType::Quit:
+    case PlatformEventType::WindowClose:
     {
       is_running = false;
+      break;
+    }
+
+    default:
+      break;
     }
   }
 
@@ -54,10 +63,14 @@ void Update(u64 &accumulator, u64 &last_frame_time, const u64 fixed_delta_time)
   }
 }
 
-void Render(WindowHandle window)
+void Render(RendererHandle renderer)
 {
-  ClearBackground(window, 1.0f, 0.0f, 1.0f, 1.0f);
-  Present(window);
+  Clear(renderer, Color{255, 0, 255, 255});
+  // DrawRectangle(
+  // renderer, Vector2D(390.0f, 320.0f), Vector2D(500.0f, 200.0f), Color(1.0f, 0.0f, 0.0f, 1.0f)
+  // );
+  // DrawCircle(renderer, Vector2D(640.0f, 360.0f), 300.0f, Color(0.0f, 0.0f, 1.0f, 1.0f));
+  Present(renderer);
 }
 
 int main(int argc, char **argv)
@@ -69,7 +82,7 @@ int main(int argc, char **argv)
   WindowHandle window;
 
   if (!CreateWindow(
-          {.title      = "Atreus",
+          {.title      = "Breakout",
            .width      = 1920,
            .height     = 1080,
            .fullscreen = false,
@@ -79,39 +92,29 @@ int main(int argc, char **argv)
       ))
     return 1;
 
-  InitializeGraphics(window);
+  RendererHandle renderer;
+
+  if (!InitializeRenderer2D(window, {.logical_width = 1280, .logical_height = 720}, &renderer))
+  {
+    DestroyWindow(&window);
+    ShutdownLog();
+    return 1;
+  }
 
   const u64 ticks_per_second = GetTicksPerSecond();
 
   u64       accumulator      = 0;
-  const u64 fixed_delta_time = (ticks_per_second + 144 / 2) / 144;
   u64       last_frame_time  = GetTicks();
-
-  // Diagnostic: how many outer-loop iterations we manage per second, i.e. the
-  // uncapped frame rate the loop could sustain (no render, no vsync yet).
-  u64 loop_iterations   = 0;
-  u64 last_report_ticks = GetTicks();
+  const u64 fixed_delta_time = (ticks_per_second + 144 / 2) / 144;
 
   while (is_running)
   {
     ProcessInput(window, is_running);
     Update(accumulator, last_frame_time, fixed_delta_time);
-    Render(window);
-
-    ++loop_iterations;
-
-    u64 now           = GetTicks();
-    u64 elapsed_ticks = now - last_report_ticks;
-    if (elapsed_ticks >= ticks_per_second)
-    {
-      f64 iterations_per_second = (f64)loop_iterations * (f64)ticks_per_second / (f64)elapsed_ticks;
-
-      loop_iterations   = 0;
-      last_report_ticks = now;
-    }
+    Render(renderer);
   }
 
-  ShutdownGraphics(window);
+  DestroyRenderer2D(&renderer);
   DestroyWindow(&window);
   ShutdownLog();
   return 0;
