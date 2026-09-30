@@ -1,6 +1,6 @@
 #include "Atreus/Graphics/Renderer2D.h"
 #include "Atreus/Log.h"
-#include "GLContext.h"
+#include "OpenGL/GLContext.h"
 
 #include <glad/gl.h>
 

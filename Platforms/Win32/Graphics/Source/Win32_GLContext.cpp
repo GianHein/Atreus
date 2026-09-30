@@ -1,5 +1,5 @@
 #include "Atreus/Log.h"
-#include "GLContext.h"
+#include "OpenGL/GLContext.h"
 
 #include <glad/gl.h>
 #include <glad/wgl.h>
@@ -134,6 +134,8 @@ namespace Atreus
       ATR_LOG_ERROR("gladLoadGL failed to load OpenGL functions");
       return false;
     }
+
+    wglSwapIntervalEXT(1);
 
     return true;
   }
