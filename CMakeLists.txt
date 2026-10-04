@@ -20,7 +20,6 @@ add_subdirectory(Engine/Platform)
 add_library(Atreus SHARED
   $<TARGET_OBJECTS:AtreusPlatform>
   $<TARGET_OBJECTS:AtreusGraphics>
-  Examples/Breakout/Source/Main.cpp
 )
 
 add_library(Atreus::Atreus ALIAS Atreus)

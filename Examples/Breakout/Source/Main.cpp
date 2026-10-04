@@ -65,7 +65,7 @@ void Update(u64 &accumulator, u64 &last_frame_time, const u64 fixed_delta_time)
 
 void Render(RendererHandle renderer)
 {
-  Clear(renderer, Color{255, 0, 255, 255});
+  Clear(renderer, Color{22, 22, 22, 255});
   // DrawRectangle(
   // renderer, Vector2D(390.0f, 320.0f), Vector2D(500.0f, 200.0f), Color(1.0f, 0.0f, 0.0f, 1.0f)
   // );
@@ -90,12 +90,16 @@ int main(int argc, char **argv)
            .resizable  = true},
           &window
       ))
+  {
+    ATR_LOG_FATAL("Failed to create window");
     return 1;
+  }
 
   RendererHandle renderer;
 
   if (!InitializeRenderer2D(window, {.logical_width = 1280, .logical_height = 720}, &renderer))
   {
+    ATR_LOG_FATAL("Failed to initialize Renderer2D");
     DestroyWindow(&window);
     ShutdownLog();
     return 1;

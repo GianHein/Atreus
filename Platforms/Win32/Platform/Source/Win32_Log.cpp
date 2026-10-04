@@ -125,22 +125,6 @@ namespace Atreus
       WriteFileBytes(log_file, FileSeekOrigin::End, 0, buffer, buffer_size, nullptr);
       FlushFile(log_file);
     }
-    else
-    {
-      printf(
-          "%s[%04u-%02u-%02u %02u:%02u:%02u.%03u][%s] %s\x1b[0m\n",
-          colors[(u8)LogLevel::Warn],
-          log_time.year,
-          log_time.month,
-          log_time.day,
-          log_time.hour,
-          log_time.minute,
-          log_time.second,
-          log_time.millisecond,
-          levels[(u8)LogLevel::Warn],
-          "Logging before initialization. File-logging disabled, please call Atreus::InitializeLog()"
-      );
-    }
 
     printf("%s%.*s\x1b[0m\n", colors[(u8)level], (int)(buffer_size - 1), buffer);
   }
