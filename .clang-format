@@ -8,43 +8,22 @@ TabWidth: 2
 ColumnLimit: 100
 
 BreakBeforeBraces: Allman
-BraceWrapping:
-  AfterFunction: false
-  AfterControlStatement: false
-  AfterStruct: false
-  AfterEnum: false
-  AfterUnion: false
-  BeforeElse: false
-  BeforeCatch: false
 
 AllowShortFunctionsOnASingleLine: None
-AllowShortIfStatementsOnASingleLine: true
-AllowShortLoopsOnASingleLine: false
-
-IndentCaseLabels: false
+AllowShortIfStatementsOnASingleLine: WithoutElse
 
 PointerAlignment: Right
-ReferenceAlignment: Right
 DerivePointerAlignment: false
 
-SpaceBeforeParens: ControlStatements
-SpaceAfterCStyleCast: false
-SpacesInParentheses: false
-SpacesInSquareBrackets: false
-SpacesInAngles: false
-SpaceBeforeAssignmentOperators: true
-
-AlignConsecutiveAssignments: true
-AlignConsecutiveDeclarations: true
+AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveDeclarations: Consecutive
 
 AlignAfterOpenBracket: BlockIndent
 BinPackArguments: false
 BinPackParameters: false
 
 KeepEmptyLinesAtTheStartOfBlocks: false
-MaxEmptyLinesToKeep: 1
 
-SortIncludes: true
 IncludeBlocks: Regroup
 IncludeCategories:
   - Regex: '^".*\.h"'
@@ -54,12 +33,9 @@ IncludeCategories:
   - Regex: '^<.*>'
     Priority: 3
 
-IndentPPDirectives: None
+IndentPPDirectives: AfterHash
 BreakStringLiterals: false
-ReflowComments: true
 
 NamespaceIndentation: All
 FixNamespaceComments: false
-
-AlignTrailingComments: true
 ...
