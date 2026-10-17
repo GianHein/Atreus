@@ -1,5 +1,7 @@
 if (WIN32)
   set(platform_dir Win32)
+elseif(UNIX)
+  set(platform_dir Linux)
 endif()
 
 file(GLOB_RECURSE PLATFORM_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Private/${platform_dir}/Source/*.cpp")
