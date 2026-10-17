@@ -11,6 +11,8 @@ _deps
 CMakeUserPresets.json
 build
 bin
+Build
+Bin
 .vscode
 .cache
 *.log
