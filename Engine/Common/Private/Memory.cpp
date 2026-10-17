@@ -17,7 +17,7 @@ namespace
 #if defined(ATR_PLATFORM_WINDOWS)
     return _aligned_malloc(size, alignment);
 #else
-    return aligned_malloc(alignment, AlignUp(size, alignment);
+    return aligned_alloc(alignment, AlignUp(size, alignment));
 #endif
   }
 
