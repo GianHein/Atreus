@@ -108,7 +108,10 @@ void *LibrarySymbol(Library *library, const char *name)
   if (symbol == nullptr)
   {
     ATR_LOG_ERROR(
-        "Platform::System", "Failed to load symbol '%s' using GetProcAddress: %lu", GetLastError()
+        "Platform::System",
+        "Failed to load symbol '%s' using GetProcAddress: %lu",
+        name,
+        GetLastError()
     );
     return nullptr;
   }
