@@ -41,7 +41,7 @@ void LogRemoveSink(LogSinkFn sink, void *user)
   }
 }
 
-static const char *LogLevelName(LogLevel level)
+const char *LogLevelName(LogLevel level)
 {
   switch (level)
   {
@@ -62,15 +62,24 @@ static const char *LogLevelName(LogLevel level)
   return "?";
 }
 
-void LogWrite(LogLevel level, const char *channel, const char *format, ...)
+void LogWrite(LogLevel level, LogContext context, const char *channel, const char *format, ...)
 {
-  char    message[1024];
+  char message[1024];
+  int  prefix_length = snprintf(
+      message, sizeof(message), "[%s:%u %s]: ", context.file, context.line, context.function
+  );
+
+  if (prefix_length < 0)
+    prefix_length = 0;
+  else if (prefix_length >= (i32)sizeof(message))
+    prefix_length = sizeof(message) - 1;
+
   va_list args;
   va_start(args, format);
-  vsnprintf(message, sizeof(message), format, args);
+  vsnprintf(message + prefix_length, sizeof(message) - prefix_length, format, args);
   va_end(args);
 
-  fprintf(stderr, "[%s][%s] %s\n", LogLevelName(level), channel, message);
+  fprintf(stderr, "[%s][%s]%s\n", LogLevelName(level), channel, message);
   fflush(stderr);
 
   for (u32 i = 0; i < sink_count; ++i)
