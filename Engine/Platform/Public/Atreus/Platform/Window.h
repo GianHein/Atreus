@@ -270,6 +270,8 @@ ATR_API bool WindowIsFocused(const Window *window);
 ATR_API bool WindowIsClosing(const Window *window);
 ATR_API void WindowSetCursorVisible(Window *window, bool visible);
 
+ATR_API void *WindowGetNativeHandle(Window *window);
+
 // Gamepads
 
 enum class GamepadButton : u8
