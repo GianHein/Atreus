@@ -8,6 +8,12 @@
 template <typename T> struct Array
 {
   static_assert(std::is_trivially_copyable_v<T>, "Array only supports trivially copyable types");
+  static_assert(
+      std::is_trivially_constructible_v < T > "Array only supports trivially constructible types"
+  );
+  static_assert(
+      std::is_trivially_destructible_v < T > "Array only supports trivially destructible types"
+  );
 
   T               *data      = nullptr;
   u32              count     = 0;
