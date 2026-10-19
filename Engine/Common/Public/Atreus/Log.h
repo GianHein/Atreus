@@ -21,31 +21,24 @@ struct LogContext
   const char *function;
 };
 
-using LogSinkFn = void (*)(void *user, LogLevel level, const char *channel, const char *message);
+using LogSinkFn = void (*)(void *user, LogLevel level, const char *message);
 
-ATR_API bool LogAddSink(LogSinkFn sink, void *user);
-ATR_API void LogRemoveSink(LogSinkFn sink, void *user);
-ATR_API void
-LogWrite(LogLevel level, LogContext context, const char *channel, const char *format, ...);
+ATR_API bool        LogAddSink(LogSinkFn sink, void *user);
+ATR_API void        LogRemoveSink(LogSinkFn sink, void *user);
+ATR_API void        LogWrite(LogLevel level, LogContext context, const char *format, ...);
 ATR_API const char *LogLevelName(LogLevel level);
 
-#define ATR_LOG_TRACE(channel, ...)                                                                \
-  LogWrite(LogLevel::Trace, {__FILE__, __LINE__, __func__}, channel, __VA_ARGS__)
+#define ATR_LOG_TRACE(...) LogWrite(LogLevel::Trace, {__FILE__, __LINE__, __func__}, __VA_ARGS__)
 
-#define ATR_LOG_DEBUG(channel, ...)                                                                \
-  LogWrite(LogLevel::Debug, {__FILE__, __LINE__, __func__}, channel, __VA_ARGS__)
+#define ATR_LOG_DEBUG(...) LogWrite(LogLevel::Debug, {__FILE__, __LINE__, __func__}, __VA_ARGS__)
 
-#define ATR_LOG_INFO(channel, ...)                                                                 \
-  LogWrite(LogLevel::Info, {__FILE__, __LINE__, __func__}, channel, __VA_ARGS__)
+#define ATR_LOG_INFO(...) LogWrite(LogLevel::Info, {__FILE__, __LINE__, __func__}, __VA_ARGS__)
 
-#define ATR_LOG_WARN(channel, ...)                                                                 \
-  LogWrite(LogLevel::Warn, {__FILE__, __LINE__, __func__}, channel, __VA_ARGS__)
+#define ATR_LOG_WARN(...) LogWrite(LogLevel::Warn, {__FILE__, __LINE__, __func__}, __VA_ARGS__)
 
-#define ATR_LOG_ERROR(channel, ...)                                                                \
-  LogWrite(LogLevel::Error, {__FILE__, __LINE__, __func__}, channel, __VA_ARGS__)
+#define ATR_LOG_ERROR(...) LogWrite(LogLevel::Error, {__FILE__, __LINE__, __func__}, __VA_ARGS__)
 
-#define ATR_LOG_FATAL(channel, ...)                                                                \
-  LogWrite(LogLevel::Fatal, {__FILE__, __LINE__, __func__}, channel, __VA_ARGS__)
+#define ATR_LOG_FATAL(...) LogWrite(LogLevel::Fatal, {__FILE__, __LINE__, __func__}, __VA_ARGS__)
 
 #if !defined(NDEBUG)
 #  define ATR_ASSERT(condition, message)                                                           \
@@ -53,9 +46,7 @@ ATR_API const char *LogLevelName(LogLevel level);
     {                                                                                              \
       if (!(condition))                                                                            \
       {                                                                                            \
-        ATR_LOG_FATAL(                                                                             \
-            "assert", "%s:%d: assertion failed: %s - %s", __FILE__, __LINE__, #condition, message  \
-        );                                                                                         \
+        ATR_LOG_FATAL("assertion failed: %s - %s", #condition, message);                           \
         ATR_DEBUG_BREAK();                                                                         \
         abort();                                                                                   \
       }                                                                                            \
@@ -69,7 +60,7 @@ ATR_API const char *LogLevelName(LogLevel level);
   {                                                                                                \
     if (!(condition))                                                                              \
     {                                                                                              \
-      ATR_LOG_FATAL("assert", "%s:%d: assertion failed: %s", __FILE__, __LINE__, #condition);      \
+      ATR_LOG_FATAL("assertion failed: %s", #condition);                                           \
       ATR_DEBUG_BREAK();                                                                           \
       abort();                                                                                     \
     }                                                                                              \
@@ -78,7 +69,7 @@ ATR_API const char *LogLevelName(LogLevel level);
 #define ATR_UNREACHABLE()                                                                          \
   do                                                                                               \
   {                                                                                                \
-    ATR_LOG_FATAL("assert", "%s:%d: unreachable", __FILE__, __LINE__);                             \
+    ATR_LOG_FATAL("unreachable");                                                                  \
     ATR_DEBUG_BREAK();                                                                             \
     abort();                                                                                       \
   } while (0)

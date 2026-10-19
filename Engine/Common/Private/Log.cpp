@@ -62,7 +62,7 @@ const char *LogLevelName(LogLevel level)
   return "?";
 }
 
-void LogWrite(LogLevel level, LogContext context, const char *channel, const char *format, ...)
+void LogWrite(LogLevel level, LogContext context, const char *format, ...)
 {
   char message[1024];
   int  prefix_length = snprintf(
@@ -79,11 +79,11 @@ void LogWrite(LogLevel level, LogContext context, const char *channel, const cha
   vsnprintf(message + prefix_length, sizeof(message) - prefix_length, format, args);
   va_end(args);
 
-  fprintf(stderr, "[%s][%s]%s\n", LogLevelName(level), channel, message);
+  fprintf(stderr, "[%s]%s\n", LogLevelName(level), message);
   fflush(stderr);
 
   for (u32 i = 0; i < sink_count; ++i)
   {
-    sinks[i].fn(sinks[i].user, level, channel, message);
+    sinks[i].fn(sinks[i].user, level, message);
   }
 }

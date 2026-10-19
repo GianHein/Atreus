@@ -81,9 +81,7 @@ Library *LibraryOpen(const char *path)
 
   if (handle == nullptr)
   {
-    ATR_LOG_ERROR(
-        "Platform::System", "Failed to load library '%s' using dlopen: %s", path, dlerror()
-    );
+    ATR_LOG_ERROR("Failed to load library '%s' using dlopen: %s", path, dlerror());
     return nullptr;
   }
 
@@ -96,9 +94,7 @@ void *LibrarySymbol(Library *library, const char *name)
 
   if (symbol == nullptr)
   {
-    ATR_LOG_ERROR(
-        "Platform::System", "Failed to load symbol '%s' using dlsym: %s", name, dlerror()
-    );
+    ATR_LOG_ERROR("Failed to load symbol '%s' using dlsym: %s", name, dlerror());
     return nullptr;
   }
 

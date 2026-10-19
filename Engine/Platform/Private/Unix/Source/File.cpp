@@ -22,7 +22,7 @@ bool FileGetSize(FileHandle handle, u64 *out_size)
 
   if (success != 0)
   {
-    ATR_LOG_ERROR("Platform::File", "Failed to get file size using fstat: %i", errno);
+    ATR_LOG_ERROR("Failed to get file size using fstat: %i", errno);
     return false;
   }
 
@@ -82,7 +82,7 @@ bool FileOpen(const char *path, FileAccessMode access, FileOpenMode mode, FileHa
   {
     *out_handle = INVALID_FILE_HANDLE;
 
-    ATR_LOG_ERROR("Platform::File", "Failed to open file '%s' through open: %i", path, errno);
+    ATR_LOG_ERROR("Failed to open file '%s' through open: %i", path, errno);
     return false;
   }
 
@@ -135,7 +135,7 @@ bool FileRead(
 
   if (!ToUnixOffset((intptr_t)handle.handle, origin, distance))
   {
-    ATR_LOG_ERROR("Platform::File", "Failed to SeekOrigin using lseek: %i", errno);
+    ATR_LOG_ERROR("Failed to SeekOrigin using lseek: %i", errno);
     return false;
   }
 
@@ -143,7 +143,7 @@ bool FileRead(
 
   if (bytes_read == -1)
   {
-    ATR_LOG_ERROR("Platform::File", "Could not read file data using read: %i", errno);
+    ATR_LOG_ERROR("Could not read file data using read: %i", errno);
     return false;
   }
 
@@ -165,7 +165,7 @@ bool FileWrite(
 
   if (!ToUnixOffset((intptr_t)handle.handle, origin, distance))
   {
-    ATR_LOG_ERROR("Platform::File", "Failed to SeekOrigin using lseek: %i", errno);
+    ATR_LOG_ERROR("Failed to SeekOrigin using lseek: %i", errno);
     return false;
   }
 
@@ -173,7 +173,7 @@ bool FileWrite(
 
   if (bytes_written == -1)
   {
-    ATR_LOG_ERROR("Platform::File", "Could not write file data using write: %i", errno);
+    ATR_LOG_ERROR("Could not write file data using write: %i", errno);
     return false;
   }
 
@@ -187,5 +187,5 @@ void FileFlush(FileHandle handle)
   ATR_ASSERT(handle.handle != nullptr, "Cannot flush using empty file handle");
 
   if (fsync((intptr_t)handle.handle) == -1)
-    ATR_LOG_ERROR("Platform::File", "Failed to flush file using fsync: %i", errno);
+    ATR_LOG_ERROR("Failed to flush file using fsync: %i", errno);
 }
