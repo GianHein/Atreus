@@ -140,7 +140,7 @@ template <typename T> T ArrayPop(Array<T> *array)
 // Removes the element at index by moving the last element into it's place; O(1), unordered
 template <typename T> void ArrayRemoveSwap(Array<T> *array, u32 index)
 {
-  ATR_ASSERT(array->count > index);
+  ATR_ASSERT(array->count > index, "Cannot swap-remove with out of bounds index");
   array->data[index] = array->data[array->count - 1];
   array->count -= 1;
 }
@@ -148,7 +148,7 @@ template <typename T> void ArrayRemoveSwap(Array<T> *array, u32 index)
 // Removes the element at index preserving order; O(n)
 template <typename T> void ArrayRemoveOrdered(Array<T> *array, u32 index)
 {
-  ATR_ASSERT(index < array->count);
+  ATR_ASSERT(array->count > index, "Cannot remove with out of bounds index");
   memmove(array->data + index, array->data + index + 1, sizeof(T) * (array->count - index - 1));
   array->count -= 1;
 }
