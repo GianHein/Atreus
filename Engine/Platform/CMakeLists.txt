@@ -16,4 +16,7 @@ target_compile_definitions(Atreus.Platform.Objects PRIVATE ATREUS_BUILDING)
 
 if (WIN32)
   target_link_libraries(Atreus.Platform.Objects PRIVATE user32 dbghelp)
+elseif(UNIX)
+  find_package(X11 REQUIRED)
+  target_link_libraries(Atreus.Platform.Objects PRIVATE X11)
 endif()
