@@ -270,7 +270,13 @@ ATR_API bool WindowIsFocused(const Window *window);
 ATR_API bool WindowIsClosing(const Window *window);
 ATR_API void WindowSetCursorVisible(Window *window, bool visible);
 
-ATR_API void *WindowGetNativeHandle(Window *window);
+struct NativeWindowHandle
+{
+  void *display;
+  u64   window;
+};
+
+ATR_API NativeWindowHandle WindowGetNativeHandle(Window *window);
 
 // Gamepads
 
