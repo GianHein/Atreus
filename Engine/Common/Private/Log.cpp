@@ -15,17 +15,24 @@ namespace
 
   SinkEntry sinks[MAX_SINKS];
   u32       sink_count = 0;
+
+  const char *colors[6] = {
+      "\x1b[30m", // TRACE - Black
+      "\x1b[34m", // DEBUG - Blue
+      "\x1b[32m", // INFO  - Green
+      "\x1b[33m", // WARN  - Yellow (Red + Green)
+      "\x1b[31m", // ERROR - Red
+      "\x1b[41m"  // FATAL - Red Background
+  };
 }
 
 bool LogAddSink(LogSinkFn sink, void *user)
 {
-  if (sink_count < MAX_SINKS)
-  {
-    sinks[sink_count++] = {sink, user};
-    return true;
-  }
+  if (sink_count >= MAX_SINKS) return false;
 
-  return false;
+  sinks[sink_count++] = {sink, user};
+
+  return true;
 }
 
 void LogRemoveSink(LogSinkFn sink, void *user)
@@ -79,7 +86,9 @@ void LogWrite(LogLevel level, LogContext context, const char *format, ...)
   vsnprintf(message + prefix_length, sizeof(message) - prefix_length, format, args);
   va_end(args);
 
-  fprintf(stderr, "[%s]%s\n", LogLevelName(level), message);
+  fprintf(
+      stderr, "%s[%s]%s\x1b[0m\n", colors[static_cast<u8>(level)], LogLevelName(level), message
+  );
   fflush(stderr);
 
   for (u32 i = 0; i < sink_count; ++i)
