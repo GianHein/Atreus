@@ -86,6 +86,7 @@ bool FileOpen(const char *path, FileAccessMode access, FileOpenMode mode, FileHa
     return false;
   }
 
+  ATR_LOG_INFO("File opened: %s", path);
   out_handle->handle = (void *)(intptr_t)handle;
   return true;
 }
