@@ -2,6 +2,7 @@
 
 #include "Atreus/Log.h"
 #include "Atreus/Memory.h"
+#include "Atreus/Platform/File.h"
 #include "Atreus/Platform/Window.h"
 #include "GLContext.h"
 
@@ -82,10 +83,18 @@ namespace
   {
     None = 0,
     Clear,
+    Rectangle
   };
 
   struct ClearCommandData
   {
+    Color color;
+  };
+
+  struct RectangleCommandData
+  {
+    Vec2  top_left;
+    Vec2  size;
     Color color;
   };
 
@@ -95,7 +104,8 @@ namespace
 
     union
     {
-      ClearCommandData clear;
+      ClearCommandData     clear;
+      RectangleCommandData rectangle;
     };
   };
 
@@ -106,14 +116,20 @@ struct Renderer2D
 {
   Window     *window;
   GLContext  *context;
+  uVec2       resolution;
   DrawCommand command_buffer[MAX_COMMANDS];
   u32         command_buffer_size;
   u32         quad_program;
+  u32         vbo;
+  u32         vao;
+  u32         vao_size;
+  u32         ebo;
+  u32         ebo_size;
 };
 
 static void PushDrawCommand(Renderer2D *renderer, DrawCommand command)
 {
-  if (renderer->command_buffer_size > MAX_COMMANDS)
+  if (renderer->command_buffer_size >= MAX_COMMANDS)
   {
     ATR_LOG_ERROR("Failed to push draw command, buffer capacity exhausted");
     return;
@@ -142,23 +158,45 @@ Renderer2D *CreateRenderer2D(Window *window)
 
   ATR_LOG_INFO("Renderer2D created");
 
-  const char *vertex_source = "#version 330 core\n"
-                              "layout (location = 0) in vec3 aPos;\n"
-                              "void main()\n"
-                              "{\n"
-                              " gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-                              "}";
+  FileHandle vertex_file;
+  FileHandle fragment_file;
 
-  const char *fragment_source = "#version 330 core\n"
-                                "out vec4 FragColor;\n"
-                                "void main()\n"
-                                "{\n"
-                                " FragColor = vec4(1.0, 0.5, 0.2, 1.0);\n"
-                                "}";
+  FileOpen(
+      "../../Engine/Graphics/Private/OpenGL/Shaders/rect.vertex.glsl",
+      FileAccessMode::Read,
+      FileOpenMode::OpenExisting,
+      &vertex_file
+  );
 
-  u32 quad_vertex_shader   = CompileShader(GL_VERTEX_SHADER, vertex_source);
+  u64 vertex_size;
+  FileGetSize(vertex_file, &vertex_size);
+
+  char vertex_source[vertex_size + 1];
+  u64  read;
+  FileRead(vertex_file, FileSeekOrigin::Begin, 0, vertex_source, vertex_size, &read);
+  vertex_source[read] = '\0';
+
+  u32 quad_vertex_shader = CompileShader(GL_VERTEX_SHADER, vertex_source);
+  FileClose(&vertex_file);
+
+  FileOpen(
+      "../../Engine/Graphics/Private/OpenGL/Shaders/rect.fragment.glsl",
+      FileAccessMode::Read,
+      FileOpenMode::OpenExisting,
+      &fragment_file
+  );
+
+  u64 fragment_size;
+  FileGetSize(fragment_file, &fragment_size);
+
+  char fragment_source[fragment_size + 1];
+  FileRead(fragment_file, FileSeekOrigin::Begin, 0, fragment_source, fragment_size, &read);
+  fragment_source[read] = '\0';
+
   u32 quad_fragment_shader = CompileShader(GL_FRAGMENT_SHADER, fragment_source);
-  renderer->quad_program   = LinkProgram(quad_vertex_shader, quad_fragment_shader);
+  FileClose(&fragment_file);
+
+  renderer->quad_program = LinkProgram(quad_vertex_shader, quad_fragment_shader);
 
   if (renderer->quad_program == 0)
   {
@@ -166,6 +204,9 @@ Renderer2D *CreateRenderer2D(Window *window)
     DestroyRenderer2D(renderer);
     return nullptr;
   }
+
+  glGenBuffers(1, &renderer->vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, renderer->vbo);
 
   return renderer;
 }
@@ -190,12 +231,13 @@ void BeginFrame2D(Renderer2D *renderer)
   u32 width, height;
   WindowGetClientSize(renderer->window, &width, &height);
 
+  renderer->resolution = {.x = width, .y = height};
   glViewport(0, 0, width, height);
 }
 
 void EndFrame2D(Renderer2D *renderer)
 {
-  for (u32 i = 0; i <= renderer->command_buffer_size; ++i)
+  for (u32 i = 0; i < renderer->command_buffer_size; ++i)
   {
     DrawCommand command = renderer->command_buffer[i];
 
@@ -210,10 +252,17 @@ void EndFrame2D(Renderer2D *renderer)
     }
     break;
 
+    case DrawCommandType::Rectangle:
+    {
+    }
+    break;
+
     default:
       break;
     }
   }
+
+  renderer->command_buffer_size = 0;
 
   GLContextSwapBuffers(renderer->context);
 }
@@ -221,4 +270,13 @@ void EndFrame2D(Renderer2D *renderer)
 void Clear(Renderer2D *renderer, Color color)
 {
   PushDrawCommand(renderer, {.type = DrawCommandType::Clear, .clear = {.color = color}});
+}
+
+void DrawRect(Renderer2D *renderer, Vec2 top_left, Vec2 size, Color color)
+{
+  PushDrawCommand(
+      renderer,
+      {.type      = DrawCommandType::Rectangle,
+       .rectangle = {.top_left = top_left, .size = size, .color = color}}
+  );
 }
