@@ -15,8 +15,8 @@ target_link_libraries(Atreus.Graphics.Headers INTERFACE Atreus.Common.Headers At
 
 add_library(Atreus.Graphics.Objects OBJECT ${GRAPHICS_SOURCES})
 target_include_directories(Atreus.Graphics.Objects PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Private/OpenGL")
-target_link_libraries(Atreus.Graphics.Objects PUBLIC Atreus.Graphics.Headers)
-target_compile_definitions(Atreus.Graphics.Objects PRIVATE ATREUS_BUILDING)
+target_link_libraries(Atreus.Graphics.Objects PUBLIC Atreus.Graphics.Headers PRIVATE Tracy::TracyClient)
+target_compile_definitions(Atreus.Graphics.Objects PRIVATE ATREUS_BUILDING ATREUS_PROFILING)
 
 if (WIN32)
   target_link_libraries(Atreus.Graphics.Objects PRIVATE opengl32 gdi32 $<BUILD_INTERFACE:glad>)

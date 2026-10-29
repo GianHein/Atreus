@@ -11,8 +11,8 @@ target_include_directories(Atreus.Platform.Headers INTERFACE "${CMAKE_CURRENT_SO
 target_link_libraries(Atreus.Platform.Headers INTERFACE Atreus.Common.Headers)
 
 add_library(Atreus.Platform.Objects OBJECT ${PLATFORM_SOURCES})
-target_link_libraries(Atreus.Platform.Objects PUBLIC Atreus.Platform.Headers)
-target_compile_definitions(Atreus.Platform.Objects PRIVATE ATREUS_BUILDING)
+target_link_libraries(Atreus.Platform.Objects PUBLIC Atreus.Platform.Headers PRIVATE Tracy::TracyClient)
+target_compile_definitions(Atreus.Platform.Objects PRIVATE ATREUS_BUILDING ATREUS_PROFILING)
 
 if (WIN32)
   target_link_libraries(Atreus.Platform.Objects PRIVATE user32 dbghelp)

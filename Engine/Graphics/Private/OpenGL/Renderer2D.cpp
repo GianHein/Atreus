@@ -4,6 +4,7 @@
 #include "Atreus/Memory.h"
 #include "Atreus/Platform/File.h"
 #include "Atreus/Platform/Window.h"
+#include "Atreus/Profiling.h"
 #include "GLContext.h"
 
 #include <glad/gl.h>
@@ -240,6 +241,7 @@ void DestroyRenderer2D(Renderer2D *renderer)
 
 void BeginFrame2D(Renderer2D *renderer)
 {
+  ATREUS_PROFILE_SCOPE();
   GLContextMakeCurrent(renderer->context);
 
   u32 width, height;
@@ -251,6 +253,7 @@ void BeginFrame2D(Renderer2D *renderer)
 
 void EndFrame2D(Renderer2D *renderer)
 {
+  ATREUS_PROFILE_SCOPE();
   for (u32 i = 0; i < renderer->command_buffer_size; ++i)
   {
     DrawCommand command = renderer->command_buffer[i];
@@ -303,6 +306,7 @@ void EndFrame2D(Renderer2D *renderer)
   renderer->command_buffer_size = 0;
 
   GLContextSwapBuffers(renderer->context);
+  ATREUS_PROFILE_FRAME();
 }
 
 void Clear(Renderer2D *renderer, Color color)
