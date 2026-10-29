@@ -74,7 +74,8 @@ int main(int argc, char const *argv[])
 
     BeginFrame2D(renderer);
 
-    Clear(renderer, {1.0f, 0.0f, 1.0f, 1.0f});
+    Clear(renderer, {0, 0, 0, 1});
+    DrawRect(renderer, {100, 100}, {100, 50}, {1, 1, 1, 1});
 
     EndFrame2D(renderer);
   }

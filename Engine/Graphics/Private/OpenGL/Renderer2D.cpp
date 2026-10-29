@@ -119,12 +119,12 @@ struct Renderer2D
   uVec2       resolution;
   DrawCommand command_buffer[MAX_COMMANDS];
   u32         command_buffer_size;
-  u32         quad_program;
+  u32         rect_program;
   u32         vbo;
   u32         vao;
-  u32         vao_size;
   u32         ebo;
-  u32         ebo_size;
+  i32         u_color_loc;
+  i32         u_resolution_loc;
 };
 
 static void PushDrawCommand(Renderer2D *renderer, DrawCommand command)
@@ -176,7 +176,7 @@ Renderer2D *CreateRenderer2D(Window *window)
   FileRead(vertex_file, FileSeekOrigin::Begin, 0, vertex_source, vertex_size, &read);
   vertex_source[read] = '\0';
 
-  u32 quad_vertex_shader = CompileShader(GL_VERTEX_SHADER, vertex_source);
+  u32 rect_vertex_shader = CompileShader(GL_VERTEX_SHADER, vertex_source);
   FileClose(&vertex_file);
 
   FileOpen(
@@ -193,20 +193,34 @@ Renderer2D *CreateRenderer2D(Window *window)
   FileRead(fragment_file, FileSeekOrigin::Begin, 0, fragment_source, fragment_size, &read);
   fragment_source[read] = '\0';
 
-  u32 quad_fragment_shader = CompileShader(GL_FRAGMENT_SHADER, fragment_source);
+  u32 rect_fragment_shader = CompileShader(GL_FRAGMENT_SHADER, fragment_source);
   FileClose(&fragment_file);
 
-  renderer->quad_program = LinkProgram(quad_vertex_shader, quad_fragment_shader);
+  renderer->rect_program = LinkProgram(rect_vertex_shader, rect_fragment_shader);
 
-  if (renderer->quad_program == 0)
+  renderer->u_color_loc = glGetUniformLocation(renderer->rect_program, "u_color");
+  if (renderer->u_color_loc == -1) ATR_LOG_ERROR("u_color does not exist in rect program");
+
+  renderer->u_resolution_loc = glGetUniformLocation(renderer->rect_program, "u_resolution");
+  if (renderer->u_resolution_loc == -1)
+    ATR_LOG_ERROR("u_resolution does not exist in rect program");
+
+  if (renderer->rect_program == 0)
   {
     ATR_LOG_ERROR("Failed to link shader program for Renderer2D");
     DestroyRenderer2D(renderer);
     return nullptr;
   }
 
+  glGenVertexArrays(1, &renderer->vao);
+  glBindVertexArray(renderer->vao);
+
   glGenBuffers(1, &renderer->vbo);
   glBindBuffer(GL_ARRAY_BUFFER, renderer->vbo);
+  glBufferData(GL_ARRAY_BUFFER, 4 * 2 * sizeof(f32), nullptr, GL_DYNAMIC_DRAW);
+
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(f32), (void *)0);
+  glEnableVertexAttribArray(0);
 
   return renderer;
 }
@@ -216,7 +230,7 @@ void DestroyRenderer2D(Renderer2D *renderer)
   ATR_ASSERT(renderer != nullptr, "renderer required");
 
   GLContextMakeCurrent(renderer->context);
-  glDeleteProgram(renderer->quad_program);
+  glDeleteProgram(renderer->rect_program);
 
   GLContextDestroy(renderer->context);
   MemFree(DefaultAllocator(), renderer, sizeof(Renderer2D));
@@ -254,6 +268,30 @@ void EndFrame2D(Renderer2D *renderer)
 
     case DrawCommandType::Rectangle:
     {
+      Vec2  top_left   = command.rectangle.top_left;
+      Vec2  size       = command.rectangle.size;
+      Color color      = command.rectangle.color;
+      uVec2 resolution = renderer->resolution;
+
+      float vertices[] = {
+          top_left.x + size.x,
+          top_left.y,
+          top_left.x + size.x,
+          top_left.y + size.y,
+          top_left.x,
+          top_left.y,
+          top_left.x,
+          top_left.y + size.y
+      };
+
+      glUseProgram(renderer->rect_program);
+      glUniform2f(renderer->u_resolution_loc, (f32)resolution.x, (f32)resolution.y);
+      glUniform4f(renderer->u_color_loc, color.r, color.b, color.g, color.a);
+
+      glBindVertexArray(renderer->vao);
+      glBindBuffer(GL_ARRAY_BUFFER, renderer->vbo);
+      glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+      glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
     break;
 
