@@ -14,6 +14,17 @@ bool FileExists(const char *path)
   return (attributes != INVALID_FILE_ATTRIBUTES && !(attributes & FILE_ATTRIBUTE_DIRECTORY));
 }
 
+bool DirectoryCreate(const char *path)
+{
+  if (CreateDirectoryA(path, nullptr)) return true;
+
+  DWORD attributes = GetFileAttributesA(path);
+  if (attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_DIRECTORY)) return true;
+
+  ATR_LOG_ERROR("Failed to create directory '%s' using CreateDirectoryA: %lu", path, GetLastError());
+  return false;
+}
+
 bool FileGetSize(FileHandle handle, u64 *out_size)
 {
   LARGE_INTEGER size;

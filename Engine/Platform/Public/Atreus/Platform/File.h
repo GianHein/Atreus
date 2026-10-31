@@ -32,6 +32,9 @@ enum class FileSeekOrigin : u8
 };
 
 ATR_API bool FileExists(const char *path);
+
+ATR_API bool DirectoryCreate(const char *path);
+
 ATR_API bool FileGetSize(FileHandle handle, u64 *out_size);
 
 ATR_API bool

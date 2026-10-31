@@ -16,6 +16,18 @@ bool FileExists(const char *path)
   return !S_ISDIR(stat_buffer.st_mode);
 }
 
+bool DirectoryCreate(const char *path)
+{
+  if (mkdir(path, 0775) == 0) return true;
+
+  struct stat stat_buffer;
+  if (errno == EEXIST && stat(path, &stat_buffer) == 0 && S_ISDIR(stat_buffer.st_mode))
+    return true;
+
+  ATR_LOG_ERROR("Failed to create directory '%s' using mkdir: %i", path, errno);
+  return false;
+}
+
 bool FileGetSize(FileHandle handle, u64 *out_size)
 {
   struct stat stat_buffer;
