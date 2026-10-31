@@ -3,6 +3,7 @@
 #include <Atreus/Platform/File.h>
 #include <Atreus/Platform/System.h>
 #include <Atreus/Platform/Window.h>
+#include <Atreus/Profiling.h>
 #include <cstdio>
 #include <cstring>
 
@@ -35,6 +36,7 @@ void FileLogSink(void *user, LogLevel level, const char *message)
 
 int main(int argc, char const *argv[])
 {
+  ATR_PROFILE_SCOPE();
   i64        unix_now = TimeUnixMilliseconds();
   char       log_file_name[32];
   FileHandle log_file;
@@ -75,7 +77,7 @@ int main(int argc, char const *argv[])
     BeginFrame2D(renderer);
 
     Clear(renderer, {0, 0, 0, 1});
-    DrawRect(renderer, {100, 100}, {100, 50}, {1, 1, 1, 1});
+    DrawQuad(renderer, {100, 100}, {100, 50}, {1, 1, 1, 1});
 
     EndFrame2D(renderer);
   }

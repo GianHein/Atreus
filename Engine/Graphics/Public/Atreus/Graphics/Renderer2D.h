@@ -21,4 +21,4 @@ ATR_API void BeginFrame2D(Renderer2D *renderer);
 ATR_API void EndFrame2D(Renderer2D *renderer);
 
 ATR_API void Clear(Renderer2D *renderer, Color color);
-ATR_API void DrawRect(Renderer2D *renderer, Vec2 top_left, Vec2 size, Color color);
+ATR_API void DrawQuad(Renderer2D *renderer, Vec2 top_left, Vec2 size, Color color);
