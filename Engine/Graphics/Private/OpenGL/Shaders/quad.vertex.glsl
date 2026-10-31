@@ -10,7 +10,6 @@ out vec4 v_color;
 void main()
 {
   vec2 ndc = (a_position / u_resolution) * 2.0 - 1.0;
-  ndc.y = -ndc.y;
 
   gl_Position = vec4(ndc, 0.0, 1.0);
   v_color = a_color;

@@ -295,6 +295,12 @@ namespace
     }
   }
 
+  // X11 reports pointer positions from the top-left; the engine uses a bottom-left origin, Y-up.
+  i32 FlipY(const Window *window, i32 y)
+  {
+    return static_cast<i32>(window->client_height) - 1 - y;
+  }
+
   void PushEvent(Window *window, const WindowEvent &event)
   {
     if (window->event_count == EVENT_CAPACITY)
@@ -569,7 +575,7 @@ namespace
     {
       WindowEvent moved   = MakeEvent(WindowEventType::MouseMoved);
       moved.mouse_moved.x = event->xmotion.x;
-      moved.mouse_moved.y = event->xmotion.y;
+      moved.mouse_moved.y = FlipY(window, event->xmotion.y);
       PushEvent(window, moved);
       break;
     }
@@ -615,7 +621,7 @@ namespace
         WindowEvent down          = MakeEvent(WindowEventType::MousePressed);
         down.mouse_pressed.button = mouse_button;
         down.mouse_pressed.x      = event->xbutton.x;
-        down.mouse_pressed.y      = event->xbutton.y;
+        down.mouse_pressed.y      = FlipY(window, event->xbutton.y);
         PushEvent(window, down);
       }
       else
@@ -623,7 +629,7 @@ namespace
         WindowEvent up           = MakeEvent(WindowEventType::MouseReleased);
         up.mouse_released.button = mouse_button;
         up.mouse_released.x      = event->xbutton.x;
-        up.mouse_released.y      = event->xbutton.y;
+        up.mouse_released.y      = FlipY(window, event->xbutton.y);
         PushEvent(window, up);
       }
       break;

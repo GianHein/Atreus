@@ -115,7 +115,7 @@ namespace
 
   struct QuadCommandData
   {
-    Vec2  top_left;
+    Vec2  bottom_left;
     Vec2  size;
     Color color;
   };
@@ -135,7 +135,7 @@ namespace
 
   struct QuadVertex
   {
-    Vec2  position;
+    Vec2  bottom_left;
     Color color;
   };
 
@@ -309,16 +309,16 @@ static void FlushQuads(Renderer2D *renderer)
   renderer->quad_count = 0;
 }
 
-static void PushQuad(Renderer2D *renderer, Vec2 position, Vec2 size, Color color)
+static void PushQuad(Renderer2D *renderer, Vec2 bottom_left, Vec2 size, Color color)
 {
   if (renderer->quad_count == MAX_QUADS) FlushQuads(renderer);
 
   QuadVertex *vertex = &renderer->vertices[renderer->quad_count * 4];
 
-  vertex[0] = {{position.x, position.y}, color};
-  vertex[1] = {{position.x + size.x, position.y}, color};
-  vertex[2] = {{position.x + size.x, position.y + size.y}, color};
-  vertex[3] = {{position.x, position.y + size.y}, color};
+  vertex[0] = {{bottom_left.x, bottom_left.y}, color};
+  vertex[1] = {{bottom_left.x + size.x, bottom_left.y}, color};
+  vertex[2] = {{bottom_left.x + size.x, bottom_left.y + size.y}, color};
+  vertex[3] = {{bottom_left.x, bottom_left.y + size.y}, color};
 
   renderer->quad_count++;
 }
@@ -356,7 +356,7 @@ void EndFrame2D(Renderer2D *renderer)
 
     case DrawCommandType::Quad:
     {
-      PushQuad(renderer, command.quad.top_left, command.quad.size, command.quad.color);
+      PushQuad(renderer, command.quad.bottom_left, command.quad.size, command.quad.color);
     }
     break;
 
@@ -382,10 +382,11 @@ void Clear(Renderer2D *renderer, Color color)
   PushDrawCommand(renderer, {.type = DrawCommandType::Clear, .clear = {.color = color}});
 }
 
-void DrawQuad(Renderer2D *renderer, Vec2 top_left, Vec2 size, Color color)
+void DrawQuad(Renderer2D *renderer, Vec2 bottom_left, Vec2 size, Color color)
 {
   PushDrawCommand(
       renderer,
-      {.type = DrawCommandType::Quad, .quad = {.top_left = top_left, .size = size, .color = color}}
+      {.type = DrawCommandType::Quad,
+       .quad = {.bottom_left = bottom_left, .size = size, .color = color}}
   );
 }
