@@ -9,10 +9,10 @@ template <typename T> struct Array
 {
   static_assert(std::is_trivially_copyable_v<T>, "Array only supports trivially copyable types");
   static_assert(
-      std::is_trivially_constructible_v < T > "Array only supports trivially constructible types"
+      std::is_trivially_constructible_v<T>, "Array only supports trivially constructible types"
   );
   static_assert(
-      std::is_trivially_destructible_v < T > "Array only supports trivially destructible types"
+      std::is_trivially_destructible_v<T>, "Array only supports trivially destructible types"
   );
 
   T               *data      = nullptr;
@@ -65,8 +65,9 @@ template <typename T> bool ArrayReserve(Array<T> *array, u32 min_capacity)
     new_capacity *= 2;
   }
 
-  T *new_data =
-      static_cast<T *>(MemAlloc(array->allocator, new_capacity, alignof(T) < 16 ? 16 : alignof(T)));
+  T *new_data = static_cast<T *>(
+      MemAlloc(array->allocator, sizeof(T) * new_capacity, alignof(T) < 16 ? 16 : alignof(T))
+  );
   if (new_data == nullptr) return false;
 
   if (array->data != nullptr)
