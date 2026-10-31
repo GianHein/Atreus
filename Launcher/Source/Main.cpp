@@ -50,8 +50,19 @@ int main(int argc, char const *argv[])
   window_desc.width  = 1920;
   window_desc.height = 1080;
 
-  Window     *window   = WindowCreate(window_desc);
+  Window *window = WindowCreate(window_desc);
+  if (!window)
+  {
+    FileClose(&log_file);
+    return 1;
+  }
+
   Renderer2D *renderer = CreateRenderer2D(window);
+  if (!renderer)
+  {
+    FileClose(&log_file);
+    return 1;
+  }
 
   bool        quit = false;
   WindowEvent event;
