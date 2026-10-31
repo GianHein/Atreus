@@ -67,8 +67,22 @@ int main(int argc, char const *argv[])
   bool        quit = false;
   WindowEvent event;
 
+  f64       total_time = 0.0;
+  const f64 delta_time = 0.01;
+
+  f64 current_time = TimeNowSeconds();
+  f64 accumulator  = 0.0;
+
   while (!quit)
   {
+    f64 now        = TimeNowSeconds();
+    f64 frame_time = now - current_time;
+
+    if (frame_time >= 0.25) frame_time = 0.25;
+    current_time = now;
+
+    accumulator += frame_time;
+
     WindowPumpMessages();
 
     while (WindowPollEvent(window, &event))
@@ -84,6 +98,17 @@ int main(int argc, char const *argv[])
         ATR_LOG_INFO("Logging");
       }
     }
+
+    while (accumulator >= delta_time)
+    {
+      // simulate(delta_time);
+
+      total_time += delta_time;
+      accumulator -= delta_time;
+    }
+
+    const f64 alpha = accumulator / delta_time;
+    // render_state = current_state * alpha + previous_state * (1.0 - alpha);
 
     BeginFrame2D(renderer);
 
