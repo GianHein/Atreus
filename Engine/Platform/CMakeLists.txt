@@ -4,7 +4,7 @@ elseif(UNIX)
   set(platform_dir Unix)
 endif()
 
-file(GLOB_RECURSE PLATFORM_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Private/${platform_dir}/Source/*.cpp")
+file(GLOB_RECURSE PLATFORM_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Private/${platform_dir}/Source/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/Private/Generic/Source/*.cpp")
 
 add_library(Atreus.Platform.Headers INTERFACE)
 target_include_directories(Atreus.Platform.Headers INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/Public")

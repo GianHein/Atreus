@@ -1,5 +1,6 @@
 add_subdirectory(Common)
 add_subdirectory(Platform)
+add_subdirectory(Core)
 add_subdirectory(Graphics)
 
 add_library(Atreus SHARED)
@@ -11,9 +12,11 @@ target_link_libraries(
   PUBLIC
     Atreus.Common.Headers
     Atreus.Platform.Headers
+    Atreus.Core.Headers
     Atreus.Graphics.Headers
   PRIVATE
     Atreus.Common.Objects
     Atreus.Platform.Objects
+    Atreus.Core.Objects
     Atreus.Graphics.Objects
 )

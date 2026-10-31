@@ -1,3 +1,4 @@
+#include <Atreus/Core/Input.h>
 #include <Atreus/Graphics/Renderer2D.h>
 #include <Atreus/Log.h>
 #include <Atreus/Platform/File.h>
@@ -80,11 +81,18 @@ int main(int argc, char const *argv[])
   bool        quit = false;
   WindowEvent event;
 
+  InputState input;
+  InputInit(&input);
+
   f64       total_time = 0.0;
   const f64 delta_time = 0.01;
 
   f64 current_time = TimeNowSeconds();
   f64 accumulator  = 0.0;
+
+  f32           rect_x     = 100;
+  f32           rect_y     = 100;
+  constexpr f32 rect_speed = 500.0f;
 
   while (!quit)
   {
@@ -100,22 +108,26 @@ int main(int argc, char const *argv[])
 
     while (WindowPollEvent(window, &event))
     {
-      if (event.type == WindowEventType::CloseRequested ||
-          (event.type == WindowEventType::KeyPressed && event.key_pressed.key == KeyCode::Escape))
+      InputHandleEvent(&input, event);
+
+      if (event.type == WindowEventType::CloseRequested || InputKeyDown(&input, KeyCode::Escape))
       {
         quit = true;
       }
-
-      if (event.type == WindowEventType::KeyPressed && event.key_pressed.key == KeyCode::P)
-      {
-        ATR_LOG_INFO("Logging");
-      }
     }
+
+    f32 prev_rect_x = rect_x;
+    f32 prev_rect_y = rect_y;
 
     while (accumulator >= delta_time)
     {
       // simulate(delta_time);
       // ATR_LOG_TRACE("Simulated 1 frame worth of time");
+
+      if (InputKeyDown(&input, KeyCode::W)) rect_y += rect_speed * delta_time;
+      if (InputKeyDown(&input, KeyCode::S)) rect_y -= rect_speed * delta_time;
+      if (InputKeyDown(&input, KeyCode::A)) rect_x -= rect_speed * delta_time;
+      if (InputKeyDown(&input, KeyCode::D)) rect_x += rect_speed * delta_time;
 
       total_time += delta_time;
       accumulator -= delta_time;
@@ -127,7 +139,13 @@ int main(int argc, char const *argv[])
     BeginFrame2D(renderer);
 
     Clear(renderer, {0, 0, 0, 1});
-    DrawQuad(renderer, {100, 100}, {100, 50}, {1, 1, 1, 1});
+    DrawQuad(
+        renderer,
+        {rect_x * (f32)alpha + prev_rect_x * (1.0f - (f32)alpha),
+         rect_y * (f32)alpha + prev_rect_y * (1.0f - (f32)alpha)},
+        {100, 50},
+        {1, 1, 1, 1}
+    );
 
     EndFrame2D(renderer);
   }

@@ -8,6 +8,11 @@ struct Vec2
   f32 y;
 };
 
+inline Vec2 operator-(Vec2 a, Vec2 b)
+{
+  return {a.x - b.x, a.y - b.y};
+}
+
 struct Vec3
 {
   f32 x;

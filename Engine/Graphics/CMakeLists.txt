@@ -13,7 +13,7 @@ file(GLOB GRAPHICS_SOURCES CONFIGURE_DEPENDS
 
 add_library(Atreus.Graphics.Headers INTERFACE)
 target_include_directories(Atreus.Graphics.Headers INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/Public")
-target_link_libraries(Atreus.Graphics.Headers INTERFACE Atreus.Common.Headers Atreus.Platform.Headers)
+target_link_libraries(Atreus.Graphics.Headers INTERFACE Atreus.Common.Headers Atreus.Platform.Headers Atreus.Core.Headers)
 
 add_library(Atreus.Graphics.Objects OBJECT ${GRAPHICS_SOURCES})
 target_include_directories(Atreus.Graphics.Objects PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Private/OpenGL")
