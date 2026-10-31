@@ -48,6 +48,15 @@ ATR_API bool FileRead(
     u64           *out_bytes_read
 );
 
+ATR_API bool FileReadToString(
+    FileHandle     handle,
+    FileSeekOrigin origin,
+    i64            distance,
+    char          *string,
+    u64            string_size,
+    u64           *out_bytes_read
+);
+
 ATR_API bool FileWrite(
     FileHandle     handle,
     FileSeekOrigin origin,

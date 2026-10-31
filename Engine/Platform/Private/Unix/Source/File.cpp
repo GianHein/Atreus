@@ -1,6 +1,7 @@
 #include "Atreus/Platform/File.h"
 
 #include "Atreus/Log.h"
+#include "Atreus/Math.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -86,7 +87,7 @@ bool FileOpen(const char *path, FileAccessMode access, FileOpenMode mode, FileHa
     return false;
   }
 
-  ATR_LOG_INFO("File opened: %s", path);
+  ATR_LOG_DEBUG("File opened: %s", path);
   out_handle->handle = (void *)(intptr_t)handle;
   return true;
 }
@@ -150,6 +151,31 @@ bool FileRead(
 
   if (out_bytes_read) *out_bytes_read = bytes_read;
 
+  return true;
+}
+
+bool FileReadToString(
+    FileHandle     handle,
+    FileSeekOrigin origin,
+    i64            distance,
+    char          *buffer,
+    u64            capacity,
+    u64           *out_bytes_read
+)
+{
+  ATR_ASSERT(handle.handle != nullptr, "handle must be valid");
+  ATR_ASSERT(buffer != nullptr && capacity > 0, "buffer must hold at least the terminator");
+
+  u64 bytes_read = 0;
+
+  if (!FileRead(handle, origin, distance, buffer, capacity - 1, &bytes_read))
+  {
+    buffer[0] = '\0';
+    return false;
+  }
+
+  buffer[bytes_read] = '\0';
+  if (out_bytes_read) *out_bytes_read = bytes_read;
   return true;
 }
 
