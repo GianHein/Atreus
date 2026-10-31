@@ -3,7 +3,10 @@
 #include "Atreus/Log.h"
 
 #include <dlfcn.h>
+#include <errno.h>
+#include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 // Time
 
@@ -71,6 +74,59 @@ DateTime TimeGetLocalDate()
   date_time.millisecond = ts.tv_nsec / 1000000;
 
   return date_time;
+}
+
+// Paths
+
+bool PathGetExecutable(char *buffer, u64 capacity)
+{
+  ATR_ASSERT(buffer != nullptr && capacity > 0, "buffer must hold at least the terminator");
+
+  ssize_t length = readlink("/proc/self/exe", buffer, capacity - 1);
+
+  // readlink does not terminate the string and silently truncates, so a full buffer is a failure
+  if (length == -1 || static_cast<u64>(length) >= capacity - 1)
+  {
+    ATR_LOG_ERROR("Failed to resolve executable path using readlink: %i", errno);
+    buffer[0] = '\0';
+    return false;
+  }
+
+  buffer[length] = '\0';
+  return true;
+}
+
+bool PathGetDirectory(const char *path, char *buffer, u64 capacity)
+{
+  ATR_ASSERT(path != nullptr, "path must not be null");
+  ATR_ASSERT(buffer != nullptr && capacity > 0, "buffer must hold at least the terminator");
+
+  const char *separator = strrchr(path, '/');
+
+  const char *directory = path;
+  u64         length    = 0;
+
+  if (separator == nullptr)
+  {
+    directory = ".";
+    length    = 1;
+  }
+  else
+  {
+    // Keep the separator when it is the root, so "/foo" yields "/" instead of "".
+    length = separator == path ? 1 : static_cast<u64>(separator - path);
+  }
+
+  if (length >= capacity)
+  {
+    ATR_LOG_ERROR("Buffer too small for directory of '%s'", path);
+    buffer[0] = '\0';
+    return false;
+  }
+
+  memmove(buffer, directory, length);
+  buffer[length] = '\0';
+  return true;
 }
 
 // Dynamic Libraries

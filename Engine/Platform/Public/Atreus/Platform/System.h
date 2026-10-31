@@ -23,6 +23,11 @@ struct DateTime
 ATR_API DateTime TimeGetUtcDate();
 ATR_API DateTime TimeGetLocalDate();
 
+// Paths
+
+ATR_API bool PathGetExecutable(char *buffer, u64 capacity);
+ATR_API bool PathGetDirectory(const char *path, char *buffer, u64 capacity);
+
 // Dynamic Libraries
 
 struct Library;
