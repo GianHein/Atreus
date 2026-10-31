@@ -68,7 +68,11 @@ template <typename T> bool ArrayReserve(Array<T> *array, u32 min_capacity)
   T *new_data = static_cast<T *>(
       MemAlloc(array->allocator, sizeof(T) * new_capacity, alignof(T) < 16 ? 16 : alignof(T))
   );
-  if (new_data == nullptr) return false;
+  if (new_data == nullptr)
+  {
+    ATR_LOG_ERROR("Failed to reallocate for ArrayReserve");
+    return false;
+  }
 
   if (array->data != nullptr)
   {
@@ -156,7 +160,7 @@ template <typename T> void ArrayRemoveOrdered(Array<T> *array, u32 index)
 
 template <typename T> bool ArrayInsert(Array<T> *array, u32 index, const T &value)
 {
-  ATR_ASSERT(index <= array->count, "Cannot insert into full array");
+  ATR_ASSERT(index <= array->count, "index out of bounds");
   if (!ArrayReserve(array, array->count + 1)) return false;
 
   memmove(array->data + index + 1, array->data + index, sizeof(T) * (array->count - index));

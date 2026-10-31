@@ -93,7 +93,9 @@ bool PathGetExecutable(char *buffer, u64 capacity)
   // On truncation GetModuleFileNameA returns the full buffer size.
   if (length == 0 || length >= capacity)
   {
-    ATR_LOG_ERROR("Failed to resolve executable path using GetModuleFileNameA: %lu", GetLastError());
+    ATR_LOG_ERROR(
+        "Failed to resolve executable path using GetModuleFileNameA: %lu", GetLastError()
+    );
     buffer[0] = '\0';
     return false;
   }

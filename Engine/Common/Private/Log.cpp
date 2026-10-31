@@ -17,7 +17,7 @@ namespace
   u32       sink_count = 0;
 
   const char *colors[6] = {
-      "\x1b[30m", // TRACE - Black
+      "\x1b[90m", // TRACE - Gray
       "\x1b[34m", // DEBUG - Blue
       "\x1b[32m", // INFO  - Green
       "\x1b[33m", // WARN  - Yellow (Red + Green)

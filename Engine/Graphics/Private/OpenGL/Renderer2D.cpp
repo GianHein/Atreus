@@ -21,22 +21,27 @@ namespace
     glShaderSource(shader, 1, &source, nullptr);
     glCompileShader(shader);
 
-    i32  success;
-    char info_log[512];
+    i32 success;
 
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (!success)
     {
-      glGetShaderInfoLog(shader, 512, nullptr, info_log);
+      i32 info_log_size;
+      glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &info_log_size);
+
+      char *info_log =
+          info_log_size > 0 ? (char *)MemAlloc(DefaultAllocator(), info_log_size) : nullptr;
+      glGetShaderInfoLog(shader, info_log_size, nullptr, info_log);
 
       ATR_LOG_ERROR(
           "Failed to compile %s shader: %s",
           type == GL_VERTEX_SHADER     ? "vertex"
           : type == GL_FRAGMENT_SHADER ? "fragment"
                                        : "unknown",
-          info_log
+          info_log ? info_log : "(no info log)"
       );
 
+      MemFree(DefaultAllocator(), info_log, info_log_size);
       glDeleteShader(shader);
       return 0;
     }
@@ -71,8 +76,7 @@ namespace
     glAttachShader(shader_program, fragment_shader);
     glLinkProgram(shader_program);
 
-    i32  success;
-    char info_log[512];
+    i32 success;
 
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
@@ -80,9 +84,16 @@ namespace
     glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
     if (!success)
     {
-      glGetProgramInfoLog(shader_program, 512, nullptr, info_log);
-      ATR_LOG_ERROR("Failed to link shader program: %s", info_log);
+      i32 info_log_size;
+      glGetProgramiv(shader_program, GL_INFO_LOG_LENGTH, &info_log_size);
 
+      char *info_log =
+          info_log_size > 0 ? (char *)MemAlloc(DefaultAllocator(), info_log_size) : nullptr;
+      glGetProgramInfoLog(shader_program, info_log_size, nullptr, info_log);
+
+      ATR_LOG_ERROR("Failed to link shader program: %s", info_log ? info_log : "(no info log)");
+
+      MemFree(DefaultAllocator(), info_log, info_log_size);
       glDeleteProgram(shader_program);
       return 0;
     }
@@ -150,13 +161,17 @@ struct Renderer2D
 
   QuadVertex *vertices;
   u32         quad_count;
+  u32         frame_quad_count;
+  u32         frame_draw_calls;
+
+  u32 dropped_draw_commands;
 };
 
 static void PushDrawCommand(Renderer2D *renderer, DrawCommand command)
 {
   if (renderer->command_buffer_size >= MAX_COMMANDS)
   {
-    ATR_LOG_ERROR("Failed to push draw command, buffer capacity exhausted");
+    renderer->dropped_draw_commands++;
     return;
   }
 
@@ -230,6 +245,13 @@ Renderer2D *CreateRenderer2D(Window *window)
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_INDICES * sizeof(u32), indices, GL_STATIC_DRAW);
   MemFree(DefaultAllocator(), indices, MAX_INDICES * sizeof(u32));
 
+  ATR_LOG_DEBUG(
+      "Quad batch: %u quads, vertex buffer %zu KB, index buffer %zu KB",
+      MAX_QUADS,
+      MAX_VERTICES * sizeof(QuadVertex) / 1024,
+      MAX_INDICES * sizeof(u32) / 1024
+  );
+
   ATR_LOG_INFO("Renderer2D created");
   return renderer;
 }
@@ -281,6 +303,9 @@ static void FlushQuads(Renderer2D *renderer)
   glBindVertexArray(renderer->vao);
   glDrawElements(GL_TRIANGLES, renderer->quad_count * 6, GL_UNSIGNED_INT, nullptr);
 
+  renderer->frame_quad_count += renderer->quad_count;
+  renderer->frame_draw_calls++;
+
   renderer->quad_count = 0;
 }
 
@@ -301,6 +326,14 @@ static void PushQuad(Renderer2D *renderer, Vec2 position, Vec2 size, Color color
 void EndFrame2D(Renderer2D *renderer)
 {
   ATR_PROFILE_SCOPE();
+
+  if (renderer->dropped_draw_commands > 0)
+  {
+    ATR_LOG_ERROR(
+        "Draw command buffer exhausted, dropped %u commands", renderer->dropped_draw_commands
+    );
+    renderer->dropped_draw_commands = 0;
+  }
 
   glUseProgram(renderer->quad_program);
   glUniform2f(renderer->u_resolution_loc, (f32)renderer->resolution.x, (f32)renderer->resolution.y);
@@ -334,6 +367,11 @@ void EndFrame2D(Renderer2D *renderer)
 
   FlushQuads(renderer);
   renderer->command_buffer_size = 0;
+
+  ATR_PROFILE_PLOT("Renderer2D quads", static_cast<i64>(renderer->frame_quad_count));
+  ATR_PROFILE_PLOT("Renderer2D draw calls", static_cast<i64>(renderer->frame_draw_calls));
+  renderer->frame_quad_count = 0;
+  renderer->frame_draw_calls = 0;
 
   GLContextSwapBuffers(renderer->context);
   ATR_PROFILE_FRAME();

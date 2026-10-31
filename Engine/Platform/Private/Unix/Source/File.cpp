@@ -21,8 +21,7 @@ bool DirectoryCreate(const char *path)
   if (mkdir(path, 0775) == 0) return true;
 
   struct stat stat_buffer;
-  if (errno == EEXIST && stat(path, &stat_buffer) == 0 && S_ISDIR(stat_buffer.st_mode))
-    return true;
+  if (errno == EEXIST && stat(path, &stat_buffer) == 0 && S_ISDIR(stat_buffer.st_mode)) return true;
 
   ATR_LOG_ERROR("Failed to create directory '%s' using mkdir: %i", path, errno);
   return false;
@@ -99,7 +98,7 @@ bool FileOpen(const char *path, FileAccessMode access, FileOpenMode mode, FileHa
     return false;
   }
 
-  ATR_LOG_DEBUG("File opened: %s", path);
+  ATR_LOG_DEBUG("File opened: '%s'", path);
   out_handle->handle = (void *)(intptr_t)handle;
   return true;
 }

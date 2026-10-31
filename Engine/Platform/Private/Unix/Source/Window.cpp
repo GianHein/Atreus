@@ -79,7 +79,7 @@ namespace
       x11.display = XOpenDisplay(nullptr);
       if (x11.display == nullptr)
       {
-        ATR_LOG_ERROR("Platform::Window", "Failed to open the X11 display");
+        ATR_LOG_ERROR("Failed to open the X11 display");
         return false;
       }
 
@@ -680,7 +680,7 @@ Window *WindowCreate(const WindowDesc &desc)
   );
   if (window->handle == 0)
   {
-    ATR_LOG_ERROR("Platform::Window", "XCreateWindow failed");
+    ATR_LOG_ERROR("XCreateWindow failed");
     MemFree(DefaultAllocator(), window, sizeof(Window));
     X11Release();
     return nullptr;
