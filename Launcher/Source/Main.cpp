@@ -35,15 +35,28 @@ void FileLogSink(void *user, LogLevel level, const char *message)
 }
 
 int main(int argc, char const *argv[])
+
 {
   ATR_PROFILE_SCOPE();
   i64        unix_now = TimeUnixMilliseconds();
-  char       log_file_name[32];
-  FileHandle log_file;
+  char       executable_directory[512];
+  char       log_directory[576];
+  char       log_path[640];
+  FileHandle log_file = INVALID_FILE_HANDLE;
 
-  sprintf(log_file_name, "%lld.log", unix_now);
-  FileOpen(log_file_name, FileAccessMode::Write, FileOpenMode::OpenAlways, &log_file);
-  LogAddSink(FileLogSink, &log_file);
+  if (!PathGetExecutable(executable_directory, sizeof(executable_directory)) ||
+      !PathGetDirectory(executable_directory, executable_directory, sizeof(executable_directory)))
+    strcpy(executable_directory, ".");
+
+  snprintf(log_directory, sizeof(log_directory), "%s/Logs", executable_directory);
+  snprintf(log_path, sizeof(log_path), "%s/%lld.log", log_directory, unix_now);
+
+  if (DirectoryCreate(log_directory) &&
+      FileOpen(log_path, FileAccessMode::Write, FileOpenMode::OpenAlways, &log_file))
+  {
+    LogAddSink(FileLogSink, &log_file);
+    ATR_LOG_INFO("Logging to %s", log_path);
+  }
 
   WindowDesc window_desc;
   window_desc.title  = "Atreus";
@@ -53,14 +66,14 @@ int main(int argc, char const *argv[])
   Window *window = WindowCreate(window_desc);
   if (!window)
   {
-    FileClose(&log_file);
+    if (log_file.handle) FileClose(&log_file);
     return 1;
   }
 
   Renderer2D *renderer = CreateRenderer2D(window);
   if (!renderer)
   {
-    FileClose(&log_file);
+    if (log_file.handle) FileClose(&log_file);
     return 1;
   }
 
@@ -102,6 +115,7 @@ int main(int argc, char const *argv[])
     while (accumulator >= delta_time)
     {
       // simulate(delta_time);
+      // ATR_LOG_TRACE("Simulated 1 frame worth of time");
 
       total_time += delta_time;
       accumulator -= delta_time;
@@ -121,6 +135,6 @@ int main(int argc, char const *argv[])
   DestroyRenderer2D(renderer);
   WindowDestroy(window);
   LogRemoveSink(FileLogSink, &log_file);
-  FileClose(&log_file);
+  if (log_file.handle) FileClose(&log_file);
   return 0;
 }
