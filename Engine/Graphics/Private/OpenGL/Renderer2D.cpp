@@ -29,6 +29,14 @@ namespace
     {
       glGetShaderInfoLog(shader, 512, nullptr, info_log);
 
+      ATR_LOG_ERROR(
+          "Failed to compile %s shader: %s",
+          type == GL_VERTEX_SHADER     ? "vertex"
+          : type == GL_FRAGMENT_SHADER ? "fragment"
+                                       : "unknown",
+          info_log
+      );
+
       glDeleteShader(shader);
       return 0;
     }
