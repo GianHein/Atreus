@@ -21,5 +21,7 @@ option(TRACY_TIMER_FALLBACK "" ON)
 option(TRACY_DISALLOW_HW_TIMER "" ON)
 add_subdirectory(Vendor/tracy)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMake")
+
 add_subdirectory(Engine)
 add_subdirectory(Launcher)

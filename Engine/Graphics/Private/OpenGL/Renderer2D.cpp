@@ -2,67 +2,44 @@
 
 #include "Atreus/Log.h"
 #include "Atreus/Memory.h"
-#include "Atreus/Platform/File.h"
 #include "Atreus/Platform/Window.h"
 #include "Atreus/Profiling.h"
 #include "GLContext.h"
+#include "Shaders/quad.fragment.glsl.h"
+#include "Shaders/quad.vertex.glsl.h"
 
 #include <glad/gl.h>
 
 namespace
 {
-  u32 CompileShaderFromFile(GLenum type, const char *path)
+  u32 CompileShader(GLenum type, const char *source)
   {
-    FileHandle file;
-    if (!FileOpen(path, FileAccessMode::Read, FileOpenMode::OpenExisting, &file))
+    u32 shader = 0;
+
+    shader = glCreateShader(type);
+
+    glShaderSource(shader, 1, &source, nullptr);
+    glCompileShader(shader);
+
+    i32  success;
+    char info_log[512];
+
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+    if (!success)
     {
+      glGetShaderInfoLog(shader, 512, nullptr, info_log);
+
+      glDeleteShader(shader);
       return 0;
     }
 
-    u32 shader = 0;
-    u64 size   = 0;
-    if (FileGetSize(file, &size))
-    {
-      char *source = static_cast<char *>(MemAlloc(DefaultAllocator(), size + 1));
-      if (source && FileReadToString(file, FileSeekOrigin::Begin, 0, source, size + 1, nullptr))
-      {
-        shader = glCreateShader(type);
+    ATR_LOG_DEBUG(
+        "Compiled %s shader",
+        type == GL_VERTEX_SHADER     ? "vertex"
+        : type == GL_FRAGMENT_SHADER ? "fragment"
+                                     : "unknown"
+    );
 
-        glShaderSource(shader, 1, &source, nullptr);
-        glCompileShader(shader);
-
-        i32  success;
-        char info_log[512];
-
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
-          glGetShaderInfoLog(shader, 512, nullptr, info_log);
-          ATR_LOG_ERROR("Failed to compile shader (%s): %s", path, info_log);
-
-          FileClose(&file);
-          MemFree(DefaultAllocator(), source, size + 1);
-
-          glDeleteShader(shader);
-          return 0;
-        }
-
-        ATR_LOG_DEBUG(
-            "Compiled %s shader",
-            type == GL_VERTEX_SHADER     ? "vertex"
-            : type == GL_FRAGMENT_SHADER ? "fragment"
-                                         : "unknown"
-        );
-      }
-      else
-      {
-        ATR_LOG_ERROR("Failed to read shader file: %s", path);
-      }
-
-      if (source) MemFree(DefaultAllocator(), source, size + 1);
-    }
-
-    FileClose(&file);
     return shader;
   }
 
@@ -196,13 +173,8 @@ Renderer2D *CreateRenderer2D(Window *window)
   renderer->window  = window;
   renderer->context = context;
 
-  u32 quad_vertex_shader = CompileShaderFromFile(
-      GL_VERTEX_SHADER, "../../Engine/Graphics/Private/OpenGL/Shaders/quad.vertex.glsl"
-  );
-
-  u32 quad_fragment_shader = CompileShaderFromFile(
-      GL_FRAGMENT_SHADER, "../../Engine/Graphics/Private/OpenGL/Shaders/quad.fragment.glsl"
-  );
+  u32 quad_vertex_shader   = CompileShader(GL_VERTEX_SHADER, quad_vertex_glsl);
+  u32 quad_fragment_shader = CompileShader(GL_FRAGMENT_SHADER, quad_fragment_glsl);
 
   renderer->quad_program = LinkProgram(quad_vertex_shader, quad_fragment_shader);
 
