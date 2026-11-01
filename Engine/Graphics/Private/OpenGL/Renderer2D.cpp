@@ -139,7 +139,7 @@ namespace
     Color color;
   };
 
-  constexpr u32 MAX_QUADS    = 8192;
+  constexpr u32 MAX_QUADS    = 1024;
   constexpr u32 MAX_VERTICES = MAX_QUADS * 4;
   constexpr u32 MAX_INDICES  = MAX_QUADS * 6;
 }
