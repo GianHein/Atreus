@@ -1,5 +1,7 @@
 #include "Atreus/Platform/Window.h"
 
+#include <cstring>
+
 namespace
 {
   const char *const key_names[] = {
@@ -125,7 +127,7 @@ KeyCode KeyCodeFromName(const char *name)
 {
   for (usize i = 0; i < ATR_ARRAY_COUNT(key_names); ++i)
   {
-    if (name == key_names[i]) return static_cast<KeyCode>(i);
+    if (strcmp(name, key_names[i]) == 0) return static_cast<KeyCode>(i);
   }
 
   return KeyCode::Unknown;
