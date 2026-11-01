@@ -90,9 +90,11 @@ int main(int argc, char const *argv[])
   f64 current_time = TimeNowSeconds();
   f64 accumulator  = 0.0;
 
-  f32           rect_x     = 100;
-  f32           rect_y     = 100;
-  constexpr f32 rect_speed = 500.0f;
+  f32           rect_x      = 100;
+  f32           rect_y      = 100;
+  f32           prev_rect_x = rect_x;
+  f32           prev_rect_y = rect_y;
+  constexpr f32 rect_speed  = 500.0f;
 
   while (!quit)
   {
@@ -116,13 +118,13 @@ int main(int argc, char const *argv[])
       }
     }
 
-    f32 prev_rect_x = rect_x;
-    f32 prev_rect_y = rect_y;
-
     while (accumulator >= delta_time)
     {
       // simulate(delta_time);
       // ATR_LOG_TRACE("Simulated 1 frame worth of time");
+
+      prev_rect_x = rect_x;
+      prev_rect_y = rect_y;
 
       if (InputKeyDown(&input, KeyCode::W)) rect_y += rect_speed * delta_time;
       if (InputKeyDown(&input, KeyCode::S)) rect_y -= rect_speed * delta_time;
@@ -146,6 +148,8 @@ int main(int argc, char const *argv[])
         {100, 50},
         {1, 1, 1, 1}
     );
+
+    // DrawQuad(renderer, {rect_x, rect_y}, {100, 50}, {1, 1, 1, 1});
 
     EndFrame2D(renderer);
   }
