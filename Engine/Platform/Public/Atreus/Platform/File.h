@@ -7,6 +7,11 @@ struct FileHandle
   void *handle;
 };
 
+inline bool operator==(FileHandle a, FileHandle b)
+{
+  return a.handle == b.handle;
+}
+
 constexpr FileHandle INVALID_FILE_HANDLE = {nullptr};
 
 enum class FileAccessMode : u8
