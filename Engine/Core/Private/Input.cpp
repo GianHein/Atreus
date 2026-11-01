@@ -7,7 +7,7 @@ void InputInit(InputState *input)
   memset(input, 0, sizeof(InputState));
 }
 
-void InputBeginFrame(InputState *input)
+void InputClearTransients(InputState *input)
 {
   memset(input->key_pressed, 0, sizeof(input->key_pressed));
   memset(input->key_released, 0, sizeof(input->key_released));
@@ -46,17 +46,17 @@ void InputHandleEvent(InputState *input, const WindowEvent &event)
     Vec2 now = {(f32)event.mouse_moved.x, (f32)event.mouse_moved.y};
 
     input->mouse_position = now;
-    input->mouse_delta    = now - old;
+    input->mouse_delta += now - old;
   }
   break;
 
   case WindowEventType::MousePressed:
   {
     Vec2 old = input->mouse_position;
-    Vec2 now = {(f32)event.mouse_moved.x, (f32)event.mouse_moved.y};
+    Vec2 now = {(f32)event.mouse_pressed.x, (f32)event.mouse_pressed.y};
 
     input->mouse_position = now;
-    input->mouse_delta    = now - old;
+    input->mouse_delta += now - old;
 
     u32 index = (u32)event.mouse_pressed.button;
 
@@ -71,7 +71,7 @@ void InputHandleEvent(InputState *input, const WindowEvent &event)
     Vec2 now = {(f32)event.mouse_released.x, (f32)event.mouse_released.y};
 
     input->mouse_position = now;
-    input->mouse_delta    = now - old;
+    input->mouse_delta += now - old;
 
     u32 index = (u32)event.mouse_released.button;
 
@@ -82,8 +82,15 @@ void InputHandleEvent(InputState *input, const WindowEvent &event)
 
   case WindowEventType::MouseWheel:
   {
-    input->mouse_wheel =
-        event.mouse_wheel.x; // TODO: Too lazy to make this into a Vec2 now, do later!
+    input->mouse_wheel +=
+        event.mouse_wheel.y; // TODO: Too lazy to make this into a Vec2 now, do later!
+  }
+  break;
+
+  case WindowEventType::FocusLost:
+  {
+    memset(input->key_down, 0, sizeof(input->key_down));
+    memset(input->mouse_down, 0, sizeof(input->mouse_down));
   }
   break;
 

@@ -6,7 +6,6 @@
 constexpr u32 INPUT_KEY_COUNT          = (u32)KeyCode::Count;
 constexpr u32 INPUT_MOUSE_BUTTON_COUNT = (u32)MouseButton::Count;
 
-// TODO: Make this into an ECS resource as soon as the ECS is available
 struct InputState
 {
   bool key_down[INPUT_KEY_COUNT];
@@ -23,7 +22,7 @@ struct InputState
 
 ATR_API void InputInit(InputState *input);
 
-ATR_API void InputBeginFrame(InputState *input);
+ATR_API void InputClearTransients(InputState *input);
 ATR_API void InputHandleEvent(InputState *input, const WindowEvent &event);
 
 inline bool InputKeyDown(const InputState *input, KeyCode key)
