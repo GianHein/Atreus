@@ -104,10 +104,12 @@ template <typename T> void ArrayClear(Array<T> *array)
 
 template <typename T> T *ArrayPush(Array<T> *array, const T &value)
 {
+  T local = value;
+
   if (!ArrayReserve(array, array->count + 1)) return nullptr;
 
   T *slot = array->data + array->count;
-  *slot   = value;
+  *slot   = local;
   array->count += 1;
 
   return slot;
@@ -161,10 +163,13 @@ template <typename T> void ArrayRemoveOrdered(Array<T> *array, u32 index)
 template <typename T> bool ArrayInsert(Array<T> *array, u32 index, const T &value)
 {
   ATR_ASSERT(index <= array->count, "index out of bounds");
+
+  T local = value;
+
   if (!ArrayReserve(array, array->count + 1)) return false;
 
   memmove(array->data + index + 1, array->data + index, sizeof(T) * (array->count - index));
-  array->data[index] = value;
+  array->data[index] = local;
   array->count += 1;
   return true;
 }
