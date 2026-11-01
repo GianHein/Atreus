@@ -25,3 +25,5 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMake")
 
 add_subdirectory(Engine)
 add_subdirectory(Launcher)
+
+add_subdirectory(Samples/Breakout)
