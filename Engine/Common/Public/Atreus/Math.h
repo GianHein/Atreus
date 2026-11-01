@@ -13,6 +13,42 @@ inline Vec2 operator-(Vec2 a, Vec2 b)
   return {a.x - b.x, a.y - b.y};
 }
 
+inline Vec2 operator+(Vec2 a, Vec2 b)
+{
+  return {a.x + b.x, a.y + b.y};
+}
+
+inline Vec2 operator*(Vec2 v, f32 s)
+{
+  return {v.x * s, v.y * s};
+}
+
+inline Vec2 operator*(f32 s, Vec2 v)
+{
+  return {v.x * s, v.y * s};
+}
+
+inline Vec2 &operator+=(Vec2 &a, Vec2 b)
+{
+  a.x += b.x;
+  a.y += b.y;
+  return a;
+}
+
+inline Vec2 &operator-=(Vec2 &a, Vec2 b)
+{
+  a.x -= b.x;
+  a.y -= b.y;
+  return a;
+}
+
+inline Vec2 &operator*=(Vec2 &v, f32 s)
+{
+  v.x *= s;
+  v.y *= s;
+  return v;
+}
+
 struct Vec3
 {
   f32 x;
