@@ -5,6 +5,7 @@
 #include <Atreus/Platform/System.h>
 #include <Atreus/Platform/Window.h>
 #include <Atreus/Profiling.h>
+#include <Atreus/Runtime/Application.h>
 #include <cstdio>
 #include <cstring>
 
@@ -35,15 +36,29 @@ void FileLogSink(void *user, LogLevel level, const char *message)
   }
 }
 
-int main(int argc, char const *argv[])
+constexpr f64 DELTA_TIME = 0.01;
 
+struct Launcher
 {
-  ATR_PROFILE_SCOPE();
-  i64        unix_now = TimeUnixMilliseconds();
-  char       executable_directory[512];
-  char       log_directory[576];
-  char       log_path[640];
-  FileHandle log_file = INVALID_FILE_HANDLE;
+  FileHandle            log_file = INVALID_FILE_HANDLE;
+  Library              *app_library;
+  const ApplicationAPI *app_api;
+  usize                 app_state_size;
+  bool                  app_initialized;
+  Window               *window;
+  Renderer2D           *renderer;
+  InputState            input;
+  ApplicationContext    app_context;
+};
+
+static bool LauncherInit(Launcher *launcher, const char *app_name)
+{
+  // Log file sink
+
+  i64  unix_now = TimeUnixMilliseconds();
+  char executable_directory[512];
+  char log_directory[576];
+  char log_path[640];
 
   if (!PathGetExecutable(executable_directory, sizeof(executable_directory)) ||
       !PathGetDirectory(executable_directory, executable_directory, sizeof(executable_directory)))
@@ -53,48 +68,112 @@ int main(int argc, char const *argv[])
   snprintf(log_path, sizeof(log_path), "%s/%lld.log", log_directory, unix_now);
 
   if (DirectoryCreate(log_directory) &&
-      FileOpen(log_path, FileAccessMode::Write, FileOpenMode::OpenAlways, &log_file))
+      FileOpen(log_path, FileAccessMode::Write, FileOpenMode::OpenAlways, &launcher->log_file))
   {
-    LogAddSink(FileLogSink, &log_file);
-    ATR_LOG_INFO("Logging to %s", log_path);
+    LogAddSink(FileLogSink, &launcher->log_file);
   }
+
+  // Application
+
+  char app_path[640];
+  i32  length = snprintf(
+      app_path, sizeof(app_path), "%s/%s%s", executable_directory, app_name, LibraryExtension()
+  );
+
+  if (length < 0 || (usize)length >= sizeof(app_path))
+  {
+    ATR_LOG_FATAL("Application path too long");
+    return false;
+  }
+
+  launcher->app_library = LibraryOpen(app_path);
+  if (launcher->app_library == nullptr)
+  {
+    ATR_LOG_FATAL("Failed to open specified application");
+    return false;
+  }
+
+  GetApplicationApiFn get_app_api =
+      (GetApplicationApiFn)LibrarySymbol(launcher->app_library, ATR_APPLICATION_ENTRY_NAME);
+
+  if (get_app_api == nullptr)
+  {
+    ATR_LOG_FATAL("Failed to load application entry-point");
+    return false;
+  }
+
+  launcher->app_api = get_app_api();
+
+  if (launcher->app_api == nullptr)
+  {
+    ATR_LOG_FATAL("Could not load ApplicationAPI from application");
+    return false;
+  }
+
+  if (launcher->app_api->api_version != ATR_APPLICATION_API_VERSION)
+  {
+    ATR_LOG_FATAL(
+        "Version mismatch, application was built for incompatible ATR_APPLICATION_API_VERSION: %u, launcher expects: %u",
+        launcher->app_api->api_version,
+        ATR_APPLICATION_API_VERSION
+    );
+    return false;
+  }
+
+  if (launcher->app_api->Update == nullptr || launcher->app_api->Render == nullptr)
+  {
+    ATR_LOG_FATAL(
+        "Application must provide Update and Render (Update: %s, Render: %s)",
+        launcher->app_api->Update ? "ok" : "missing",
+        launcher->app_api->Render ? "ok" : "missing"
+    );
+    return false;
+  }
+
+  launcher->app_state_size = launcher->app_api->state_size;
+
+  // Window, Renderer, and Input
 
   WindowDesc window_desc;
   window_desc.title  = "Atreus";
   window_desc.width  = 1920;
   window_desc.height = 1080;
 
-  Window *window = WindowCreate(window_desc);
-  if (!window)
-  {
-    if (log_file.handle) FileClose(&log_file);
-    return 1;
-  }
+  launcher->window = WindowCreate(window_desc);
+  if (!launcher->window) return false;
 
-  Renderer2D *renderer = CreateRenderer2D(window);
-  if (!renderer)
-  {
-    if (log_file.handle) FileClose(&log_file);
-    return 1;
-  }
+  launcher->renderer = CreateRenderer2D(launcher->window);
+  if (!launcher->renderer) return false;
 
+  InputInit(&launcher->input);
+
+  // Application context
+
+  launcher->app_context.window     = launcher->window;
+  launcher->app_context.renderer   = launcher->renderer;
+  launcher->app_context.allocator  = DefaultAllocator();
+  launcher->app_context.input      = &launcher->input;
+  launcher->app_context.state      = MemAllocZeroed(DefaultAllocator(), launcher->app_state_size);
+  launcher->app_context.delta_time = DELTA_TIME;
+  launcher->app_context.alpha      = 0.0f;
+  launcher->app_context.quit_requested = false;
+
+  if (!launcher->app_context.state) return false;
+
+  launcher->app_initialized = true;
+
+  if (launcher->app_api->Init) launcher->app_api->Init(&launcher->app_context);
+
+  return true;
+}
+
+static void LauncherRun(Launcher *launcher)
+{
   bool        quit = false;
   WindowEvent event;
 
-  InputState input;
-  InputInit(&input);
-
-  f64       total_time = 0.0;
-  const f64 delta_time = 0.01;
-
   f64 current_time = TimeNowSeconds();
   f64 accumulator  = 0.0;
-
-  f32           rect_x      = 100;
-  f32           rect_y      = 100;
-  f32           prev_rect_x = rect_x;
-  f32           prev_rect_y = rect_y;
-  constexpr f32 rect_speed  = 500.0f;
 
   while (!quit)
   {
@@ -108,55 +187,68 @@ int main(int argc, char const *argv[])
 
     WindowPumpMessages();
 
-    while (WindowPollEvent(window, &event))
+    while (WindowPollEvent(launcher->window, &event))
     {
-      InputHandleEvent(&input, event);
+      InputHandleEvent(&launcher->input, event);
 
-      if (event.type == WindowEventType::CloseRequested || InputKeyDown(&input, KeyCode::Escape))
-      {
-        quit = true;
-      }
+      if (event.type == WindowEventType::CloseRequested) quit = true;
     }
 
-    while (accumulator >= delta_time)
+    while (accumulator >= DELTA_TIME)
     {
-      // simulate(delta_time);
-      // ATR_LOG_TRACE("Simulated 1 frame worth of time");
+      launcher->app_api->Update(&launcher->app_context);
+      InputClearTransients(&launcher->input);
 
-      prev_rect_x = rect_x;
-      prev_rect_y = rect_y;
-
-      if (InputKeyDown(&input, KeyCode::W)) rect_y += rect_speed * delta_time;
-      if (InputKeyDown(&input, KeyCode::S)) rect_y -= rect_speed * delta_time;
-      if (InputKeyDown(&input, KeyCode::A)) rect_x -= rect_speed * delta_time;
-      if (InputKeyDown(&input, KeyCode::D)) rect_x += rect_speed * delta_time;
-
-      total_time += delta_time;
-      accumulator -= delta_time;
+      accumulator -= DELTA_TIME;
     }
 
-    const f64 alpha = accumulator / delta_time;
+    if (launcher->app_context.quit_requested) quit = true;
+
+    launcher->app_context.alpha = accumulator / DELTA_TIME;
     // render_state = current_state * alpha + previous_state * (1.0 - alpha);
 
-    BeginFrame2D(renderer);
+    BeginFrame2D(launcher->renderer);
 
-    Clear(renderer, {0, 0, 0, 1});
-    DrawQuad(
-        renderer,
-        {rect_x * (f32)alpha + prev_rect_x * (1.0f - (f32)alpha),
-         rect_y * (f32)alpha + prev_rect_y * (1.0f - (f32)alpha)},
-        {100, 50},
-        {1, 1, 1, 1}
-    );
+    launcher->app_api->Render(&launcher->app_context);
 
-    // DrawQuad(renderer, {rect_x, rect_y}, {100, 50}, {1, 1, 1, 1});
+    EndFrame2D(launcher->renderer);
+  }
+}
 
-    EndFrame2D(renderer);
+static void LauncherShutdown(Launcher *launcher)
+{
+  if (launcher->app_initialized && launcher->app_api->Shutdown)
+    launcher->app_api->Shutdown(&launcher->app_context);
+
+  if (launcher->app_context.state)
+    MemFree(DefaultAllocator(), launcher->app_context.state, launcher->app_state_size);
+
+  if (launcher->app_library) LibraryClose(launcher->app_library);
+  if (launcher->renderer) DestroyRenderer2D(launcher->renderer);
+  if (launcher->window) WindowDestroy(launcher->window);
+
+  if (launcher->log_file != INVALID_FILE_HANDLE)
+  {
+    LogRemoveSink(FileLogSink, &launcher->log_file);
+    FileClose(&launcher->log_file);
+  }
+}
+
+int main(int argc, char const *argv[])
+{
+  printf("Atreus v0.1.0\n");
+
+  if (argc <= 1)
+  {
+    printf("Usage: %s <application>\n", argv[0]);
+    return 1;
   }
 
-  DestroyRenderer2D(renderer);
-  WindowDestroy(window);
-  LogRemoveSink(FileLogSink, &log_file);
-  if (log_file.handle) FileClose(&log_file);
-  return 0;
+  Launcher launcher = {};
+
+  bool initialized_successfully = LauncherInit(&launcher, argv[1]);
+  if (initialized_successfully) LauncherRun(&launcher);
+  LauncherShutdown(&launcher);
+
+  return initialized_successfully ? 0 : 1;
 }

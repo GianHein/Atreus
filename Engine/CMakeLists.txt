@@ -2,6 +2,7 @@ add_subdirectory(Common)
 add_subdirectory(Platform)
 add_subdirectory(Core)
 add_subdirectory(Graphics)
+add_subdirectory(Runtime)
 
 add_library(Atreus SHARED)
 set_target_properties(Atreus PROPERTIES PREFIX "")
@@ -14,6 +15,7 @@ target_link_libraries(
     Atreus.Platform.Headers
     Atreus.Core.Headers
     Atreus.Graphics.Headers
+    Atreus.Runtime.Headers
   PRIVATE
     Atreus.Common.Objects
     Atreus.Platform.Objects
