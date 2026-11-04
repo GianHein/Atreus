@@ -217,6 +217,9 @@ namespace
     case XK_bracketright:
       return KeyCode::RightBracket;
     case XK_grave:
+    case XK_dead_grave:
+    case XK_asciicircum:
+    case XK_dead_circumflex: // ^ on German layouts, the same physical key as ` on US layouts.
       return KeyCode::GraveAccent;
 
     // With Num Lock off, level 0 of the keypad holds the navigation keysyms.
