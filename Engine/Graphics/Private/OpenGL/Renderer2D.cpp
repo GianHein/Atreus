@@ -4,7 +4,7 @@
 #include "Atreus/Memory.h"
 #include "Atreus/Platform/Window.h"
 #include "Atreus/Profiling.h"
-#include "GLContext.h"
+#include "Context/GLContext.h"
 #include "Shaders/quad.fragment.glsl.h"
 #include "Shaders/quad.vertex.glsl.h"
 

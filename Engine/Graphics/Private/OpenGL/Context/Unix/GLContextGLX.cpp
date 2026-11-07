@@ -1,7 +1,7 @@
 #include "Atreus/Log.h"
 #include "Atreus/Memory.h"
 #include "Atreus/Platform/Window.h"
-#include "GLContext.h"
+#include "Context/GLContext.h"
 
 #define Window XWindow
 #define KeyCode XKeyCode
