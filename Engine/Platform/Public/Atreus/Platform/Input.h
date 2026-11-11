@@ -147,3 +147,40 @@ enum class MouseButton : u8
 
 ATR_API const char *KeyCodeName(KeyCode key);
 ATR_API KeyCode     KeyCodeFromName(const char *name);
+
+// Gamepads
+
+enum class GamepadButton : u8
+{
+  DpadUp,
+  DpadDown,
+  DpadLeft,
+  DpadRight,
+  Start,
+  Back,
+  LeftStick,
+  RightStick,
+  LeftShoulder,
+  RightShoulder,
+  A,
+  B,
+  X,
+  Y,
+  Count,
+};
+
+struct GamepadState
+{
+  bool connected;
+  u32  buttons; // Bit i set when GamepadButton i is down
+  f32  left_x;  // Sticks in [-1, 1] with dead zone applied; triggers in [0, 1]
+  f32  left_y;
+  f32  right_x;
+  f32  right_y;
+  f32  left_trigger;
+  f32  right_trigger;
+};
+
+constexpr u32 MAX_GAMEPADS = 4;
+
+ATR_API void GamepadPoll(u32 index, GamepadState *out_state);
