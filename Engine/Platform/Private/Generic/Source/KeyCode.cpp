@@ -117,13 +117,13 @@ namespace
   );
 }
 
-const char *KeyCodeName(KeyCode key)
+const char *keycode_name(KeyCode key)
 {
   u8 index = static_cast<u8>(key);
   return index < ATR_ARRAY_COUNT(key_names) ? key_names[index] : "Unknown";
 }
 
-KeyCode KeyCodeFromName(const char *name)
+KeyCode keycode_from_name(const char *name)
 {
   for (usize i = 0; i < ATR_ARRAY_COUNT(key_names); ++i)
   {

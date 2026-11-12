@@ -13,9 +13,9 @@ struct GLContextDesc
   bool vsync         = true;
 };
 
-GLContext *GLContextCreate(Window *window, const GLContextDesc &desc);
-void       GLContextDestroy(GLContext *context);
+GLContext *gl_context_create(Window *window, const GLContextDesc &desc);
+void       gl_context_destroy(GLContext *context);
 
-void GLContextMakeCurrent(GLContext *context);
-void GLContextSwapBuffers(GLContext *context);
-void GLContextSetVSync(GLContext *context, bool enabled);
+void gl_context_make_current(GLContext *context);
+void gl_context_swap_buffers(GLContext *context);
+void gl_context_set_vsync(GLContext *context, bool enabled);

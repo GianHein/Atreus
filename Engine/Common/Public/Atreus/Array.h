@@ -33,7 +33,7 @@ template <typename T> struct Array
   }
 };
 
-template <typename T> void ArrayInit(Array<T> *array, const Allocator *allocator)
+template <typename T> void array_init(Array<T> *array, const Allocator *allocator)
 {
   array->data      = nullptr;
   array->count     = 0;
@@ -41,7 +41,7 @@ template <typename T> void ArrayInit(Array<T> *array, const Allocator *allocator
   array->allocator = allocator;
 }
 
-template <typename T> void ArrayFree(Array<T> *array)
+template <typename T> void array_free(Array<T> *array)
 {
   if (array->data != nullptr)
   {
@@ -53,7 +53,7 @@ template <typename T> void ArrayFree(Array<T> *array)
   }
 }
 
-template <typename T> bool ArrayReserve(Array<T> *array, u32 min_capacity)
+template <typename T> bool array_reserve(Array<T> *array, u32 min_capacity)
 {
   if (array->capacity >= min_capacity) return true;
 
@@ -86,7 +86,7 @@ template <typename T> bool ArrayReserve(Array<T> *array, u32 min_capacity)
 }
 
 // Resizes the array; new elements are zero-initialized
-template <typename T> bool ArrayResize(Array<T> *array, u32 new_count)
+template <typename T> bool array_resize(Array<T> *array, u32 new_count)
 {
   if (!ArrayReserve(array, new_count)) return false;
 
@@ -97,12 +97,12 @@ template <typename T> bool ArrayResize(Array<T> *array, u32 new_count)
   return true;
 }
 
-template <typename T> void ArrayClear(Array<T> *array)
+template <typename T> void array_clear(Array<T> *array)
 {
   array->count = 0;
 }
 
-template <typename T> T *ArrayPush(Array<T> *array, const T &value)
+template <typename T> T *array_push(Array<T> *array, const T &value)
 {
   T local = value;
 
@@ -116,7 +116,7 @@ template <typename T> T *ArrayPush(Array<T> *array, const T &value)
 }
 
 // Appends an element and returns it zero-initialized
-template <typename T> T *ArrayPushZeroed(Array<T> *array)
+template <typename T> T *array_push_zeroed(Array<T> *array)
 {
   if (!ArrayReserve(array, array->count + 1)) return nullptr;
 
@@ -127,7 +127,7 @@ template <typename T> T *ArrayPushZeroed(Array<T> *array)
   return slot;
 }
 
-template <typename T> bool ArrayAppend(Array<T> *array, const T *values, u32 value_count)
+template <typename T> bool array_append(Array<T> *array, const T *values, u32 value_count)
 {
   if (value_count == 0) return true;
   if (!ArrayReserve(array, array->count + value_count)) return false;
@@ -137,7 +137,7 @@ template <typename T> bool ArrayAppend(Array<T> *array, const T *values, u32 val
   return true;
 }
 
-template <typename T> T ArrayPop(Array<T> *array)
+template <typename T> T array_pop(Array<T> *array)
 {
   ATR_ASSERT(array->count > 0, "Cannot pop on empty array");
   array->count -= 1;
@@ -145,7 +145,7 @@ template <typename T> T ArrayPop(Array<T> *array)
 }
 
 // Removes the element at index by moving the last element into it's place; O(1), unordered
-template <typename T> void ArrayRemoveSwap(Array<T> *array, u32 index)
+template <typename T> void array_remove_swap(Array<T> *array, u32 index)
 {
   ATR_ASSERT(array->count > index, "Cannot swap-remove with out of bounds index");
   array->data[index] = array->data[array->count - 1];
@@ -153,14 +153,14 @@ template <typename T> void ArrayRemoveSwap(Array<T> *array, u32 index)
 }
 
 // Removes the element at index preserving order; O(n)
-template <typename T> void ArrayRemoveOrdered(Array<T> *array, u32 index)
+template <typename T> void array_remove_ordered(Array<T> *array, u32 index)
 {
   ATR_ASSERT(array->count > index, "Cannot remove with out of bounds index");
   memmove(array->data + index, array->data + index + 1, sizeof(T) * (array->count - index - 1));
   array->count -= 1;
 }
 
-template <typename T> bool ArrayInsert(Array<T> *array, u32 index, const T &value)
+template <typename T> bool array_insert(Array<T> *array, u32 index, const T &value)
 {
   ATR_ASSERT(index <= array->count, "index out of bounds");
 
@@ -174,17 +174,17 @@ template <typename T> bool ArrayInsert(Array<T> *array, u32 index, const T &valu
   return true;
 }
 
-template <typename T> T *ArrayBegin(Array<T> *array)
+template <typename T> T *array_begin(Array<T> *array)
 {
   return array->data;
 }
 
-template <typename T> T *ArrayEnd(Array<T> *array)
+template <typename T> T *array_end(Array<T> *array)
 {
   return array->data + array->count;
 }
 
-template <typename T> T *ArrayLast(Array<T> *array)
+template <typename T> T *array_last(Array<T> *array)
 {
   ATR_ASSERT(array->count > 0, "Cannot get last element of empty array");
   return array->data + array->count - 1;

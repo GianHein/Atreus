@@ -37,7 +37,7 @@ struct Window
 
 namespace
 {
-  KeyCode TranslateKey(WPARAM virtual_key, LPARAM flags)
+  KeyCode translate_key(WPARAM virtual_key, LPARAM flags)
   {
     if (virtual_key >= 'A' && virtual_key <= 'Z')
     {
@@ -133,7 +133,7 @@ namespace
     }
   }
 
-  void PushEvent(Window *window, const WindowEvent &event)
+  void push_event(Window *window, const WindowEvent &event)
   {
     if (window->event_count == EVENT_CAPACITY)
     {
@@ -145,17 +145,17 @@ namespace
     window->event_count += 1;
   }
 
-  WindowEvent MakeEvent(WindowEventType type)
+  WindowEvent make_event(WindowEventType type)
   {
     WindowEvent event = {};
     event.type        = type;
     return event;
   }
 
-  void PushMouseButton(Window *window, MouseButton button, bool down, LPARAM l_param)
+  void push_mouse_button(Window *window, MouseButton button, bool down, LPARAM l_param)
   {
     WindowEvent event =
-        MakeEvent(down ? WindowEventType::MousePressed : WindowEventType::MouseReleased);
+        make_event(down ? WindowEventType::MousePressed : WindowEventType::MouseReleased);
 
     if (down)
     {
@@ -170,7 +170,7 @@ namespace
       event.mouse_released.y      = HIWORD(l_param);
     }
 
-    PushEvent(window, event);
+    push_event(window, event);
     if (down)
     {
       SetCapture(window->hwnd);
@@ -196,7 +196,7 @@ namespace
     {
     case WM_CLOSE:
       window->closing = true;
-      PushEvent(window, MakeEvent(WindowEventType::CloseRequested));
+      push_event(window, make_event(WindowEventType::CloseRequested));
       return 0;
 
     case WM_SIZE:
@@ -206,11 +206,11 @@ namespace
         window->client_width  = LOWORD(lParam);
         window->client_height = HIWORD(lParam);
 
-        WindowEvent event           = MakeEvent(WindowEventType::Resized);
+        WindowEvent event           = make_event(WindowEventType::Resized);
         event.window_resized.width  = window->client_width;
         event.window_resized.height = window->client_height;
 
-        PushEvent(window, event);
+        push_event(window, event);
       }
       return 0;
     }
@@ -218,10 +218,11 @@ namespace
     case WM_SETFOCUS:
     case WM_KILLFOCUS:
     {
-      window->focused = Msg == WM_SETFOCUS;
-      WindowEvent event =
-          MakeEvent(Msg == WM_SETFOCUS ? WindowEventType::FocusGained : WindowEventType::FocusLost);
-      PushEvent(window, event);
+      window->focused   = Msg == WM_SETFOCUS;
+      WindowEvent event = make_event(
+          Msg == WM_SETFOCUS ? WindowEventType::FocusGained : WindowEventType::FocusLost
+      );
+      push_event(window, event);
       return 0;
     }
 
@@ -231,12 +232,12 @@ namespace
     case WM_SYSKEYUP:
     {
       bool    down = Msg == WM_KEYDOWN || Msg == WM_SYSKEYDOWN;
-      KeyCode key  = TranslateKey(wParam, lParam);
+      KeyCode key  = translate_key(wParam, lParam);
 
       if (key != KeyCode::Unknown)
       {
         WindowEvent event =
-            MakeEvent(down ? WindowEventType::KeyPressed : WindowEventType::KeyReleased);
+            make_event(down ? WindowEventType::KeyPressed : WindowEventType::KeyReleased);
 
         if (down)
         {
@@ -248,7 +249,7 @@ namespace
           event.key_released.key = key;
         }
 
-        PushEvent(window, event);
+        push_event(window, event);
       }
 
       if (Msg == WM_SYSKEYDOWN || Msg == WM_SYSKEYUP)
@@ -259,36 +260,36 @@ namespace
 
     case WM_MOUSEMOVE:
     {
-      WindowEvent event   = MakeEvent(WindowEventType::MouseMoved);
+      WindowEvent event   = make_event(WindowEventType::MouseMoved);
       event.mouse_moved.x = LOWORD(lParam);
       event.mouse_moved.y = HIWORD(lParam);
-      PushEvent(window, event);
+      push_event(window, event);
       return 0;
     }
 
     case WM_LBUTTONDOWN:
-      PushMouseButton(window, MouseButton::Left, true, lParam);
+      push_mouse_button(window, MouseButton::Left, true, lParam);
       break;
     case WM_LBUTTONUP:
-      PushMouseButton(window, MouseButton::Left, false, lParam);
+      push_mouse_button(window, MouseButton::Left, false, lParam);
       break;
     case WM_RBUTTONDOWN:
-      PushMouseButton(window, MouseButton::Right, true, lParam);
+      push_mouse_button(window, MouseButton::Right, true, lParam);
       break;
     case WM_RBUTTONUP:
-      PushMouseButton(window, MouseButton::Right, false, lParam);
+      push_mouse_button(window, MouseButton::Right, false, lParam);
       break;
     case WM_MBUTTONDOWN:
-      PushMouseButton(window, MouseButton::Middle, true, lParam);
+      push_mouse_button(window, MouseButton::Middle, true, lParam);
       break;
     case WM_MBUTTONUP:
-      PushMouseButton(window, MouseButton::Middle, false, lParam);
+      push_mouse_button(window, MouseButton::Middle, false, lParam);
       break;
 
     case WM_MOUSEWHEEL:
     case WM_MOUSEHWHEEL:
     {
-      WindowEvent event = MakeEvent(WindowEventType::MouseWheel);
+      WindowEvent event = make_event(WindowEventType::MouseWheel);
       f32 delta = static_cast<f32>(GET_WHEEL_DELTA_WPARAM(wParam)) / static_cast<f32>(WHEEL_DELTA);
 
       if (Msg == WM_MOUSEWHEEL)
@@ -296,7 +297,7 @@ namespace
       else
         event.mouse_wheel.x = delta;
 
-      PushEvent(window, event);
+      push_event(window, event);
       return 0;
     }
 
@@ -308,7 +309,7 @@ namespace
   }
 
   static bool class_registered = false;
-  bool        RegisterWindowClass()
+  bool        register_window_class()
   {
     if (class_registered)
     {
@@ -333,15 +334,15 @@ namespace
   }
 }
 
-Window *WindowCreate(const WindowDesc &desc)
+Window *window_create(const WindowDesc &desc)
 {
-  if (!RegisterWindowClass())
+  if (!register_window_class())
   {
     ATR_LOG_ERROR("Failed to register window class");
     return nullptr;
   }
 
-  Window *window = static_cast<Window *>(MemAllocZeroed(DefaultAllocator(), sizeof(Window)));
+  Window *window = static_cast<Window *>(mem_alloc_zeroed(default_allocator(), sizeof(Window)));
   if (window == nullptr)
   {
     return nullptr;
@@ -373,7 +374,7 @@ Window *WindowCreate(const WindowDesc &desc)
   if (window->hwnd == nullptr)
   {
     ATR_LOG_ERROR("CreateWindowExA failed (%lu)", GetLastError());
-    MemFree(DefaultAllocator(), window, sizeof(Window));
+    mem_free(default_allocator(), window, sizeof(Window));
     return nullptr;
   }
 
@@ -389,21 +390,21 @@ Window *WindowCreate(const WindowDesc &desc)
     ShowWindow(window->hwnd, SW_SHOW);
     window->focused = GetForegroundWindow() == window->hwnd;
   }
-  if (desc.fullscreen) WindowSetFullscreen(window, true);
+  if (desc.fullscreen) window_set_fullscreen(window, true);
 
   return window;
 }
 
-void WindowDestroy(Window *window)
+void window_destroy(Window *window)
 {
   if (window == nullptr) return;
 
   SetWindowLongPtr(window->hwnd, GWLP_USERDATA, 0);
   DestroyWindow(window->hwnd);
-  MemFree(DefaultAllocator(), window, sizeof(Window));
+  mem_free(default_allocator(), window, sizeof(Window));
 }
 
-void WindowPumpMessages()
+void window_pump_messages()
 {
   MSG Msg;
 
@@ -414,7 +415,7 @@ void WindowPumpMessages()
   }
 }
 
-bool WindowPollEvent(Window *window, WindowEvent *out_event)
+bool window_poll_event(Window *window, WindowEvent *out_event)
 {
   if (window->event_count == 0) return false;
 
@@ -425,18 +426,18 @@ bool WindowPollEvent(Window *window, WindowEvent *out_event)
   return true;
 }
 
-void WindowGetClientSize(const Window *window, u32 *out_width, u32 *out_height)
+void window_get_client_size(const Window *window, u32 *out_width, u32 *out_height)
 {
   *out_width  = window->client_width;
   *out_height = window->client_height;
 }
 
-void WindowSetTitle(Window *window, const char *title)
+void window_set_title(Window *window, const char *title)
 {
   SetWindowTextA(window->hwnd, title);
 }
 
-void WindowSetFullscreen(Window *window, bool fullscreen)
+void window_set_fullscreen(Window *window, bool fullscreen)
 {
   if (fullscreen == window->fullscreen) return;
 
@@ -478,12 +479,12 @@ void WindowSetFullscreen(Window *window, bool fullscreen)
   window->fullscreen = fullscreen;
 }
 
-bool WindowIsFullscreen(const Window *window)
+bool window_is_fullscreen(const Window *window)
 {
   return window->fullscreen;
 }
 
-void WindowSetBorderless(Window *window, bool borderless)
+void window_set_borderless(Window *window, bool borderless)
 {
   if (borderless == window->borderless) return;
 
@@ -524,22 +525,22 @@ void WindowSetBorderless(Window *window, bool borderless)
   window->borderless = borderless;
 }
 
-bool WindowIsBorderless(const Window *window)
+bool window_is_borderless(const Window *window)
 {
   return window->borderless;
 }
 
-bool WindowIsFocused(const Window *window)
+bool window_is_focused(const Window *window)
 {
   return window->focused;
 }
 
-bool WindowIsClosing(const Window *window)
+bool window_is_closing(const Window *window)
 {
   return window->closing;
 }
 
-NativeWindowHandle WindowGetNativeHandle(Window *window)
+NativeWindowHandle window_get_native_handle(Window *window)
 {
   return {.display = GetModuleHandleW(nullptr), .window = reinterpret_cast<u64>(window->hwnd)};
 }

@@ -20,37 +20,37 @@ struct InputState
   bool mouse_released[INPUT_MOUSE_BUTTON_COUNT];
 };
 
-ATR_API void InputInit(InputState *input);
+ATR_API void input_init(InputState *input);
 
-ATR_API void InputClearTransients(InputState *input);
-ATR_API void InputHandleEvent(InputState *input, const WindowEvent &event);
+ATR_API void input_clear_transients(InputState *input);
+ATR_API void input_handle_event(InputState *input, const WindowEvent &event);
 
-inline bool InputKeyDown(const InputState *input, KeyCode key)
+inline bool input_key_down(const InputState *input, KeyCode key)
 {
   return input->key_down[(u32)key];
 }
 
-inline bool InputKeyPressed(const InputState *input, KeyCode key)
+inline bool input_key_pressed(const InputState *input, KeyCode key)
 {
   return input->key_pressed[(u32)key];
 }
 
-inline bool InputKeyReleased(const InputState *input, KeyCode key)
+inline bool input_key_released(const InputState *input, KeyCode key)
 {
   return input->key_released[(u32)key];
 }
 
-inline bool InputMouseDown(const InputState *input, MouseButton button)
+inline bool input_mouse_down(const InputState *input, MouseButton button)
 {
   return input->mouse_down[(u32)button];
 }
 
-inline bool InputMousePressed(const InputState *input, MouseButton button)
+inline bool input_mouse_pressed(const InputState *input, MouseButton button)
 {
   return input->mouse_pressed[(u32)button];
 }
 
-inline bool InputMouseReleased(const InputState *input, MouseButton button)
+inline bool input_mouse_released(const InputState *input, MouseButton button)
 {
   return input->mouse_released[(u32)button];
 }

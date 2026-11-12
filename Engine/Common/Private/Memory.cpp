@@ -33,10 +33,10 @@ namespace
 #endif
   }
 
-  const Allocator default_allocator = {DefaultAlloc, DefaultFree, nullptr};
+  const Allocator _default_allocator = {DefaultAlloc, DefaultFree, nullptr};
 }
 
-const Allocator *DefaultAllocator()
+const Allocator *default_allocator()
 {
-  return &default_allocator;
+  return &_default_allocator;
 }

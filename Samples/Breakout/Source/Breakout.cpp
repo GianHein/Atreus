@@ -15,44 +15,44 @@ struct BreakoutState
   bool bricks[ROWS][COLS];
 };
 
-static void Init(ApplicationContext *context)
+static void init(ApplicationContext *context)
 {
   BreakoutState *state = (BreakoutState *)context->state;
 
   state->paddle = {100, 100};
 }
 
-static void Shutdown(ApplicationContext *context)
+static void shutdown(ApplicationContext *context)
 {
 }
 
-static void Update(ApplicationContext *context)
+static void update(ApplicationContext *context)
 {
   BreakoutState *state = (BreakoutState *)context->state;
 
   state->paddle_previous = state->paddle;
 
-  if (InputKeyDown(context->input, KeyCode::W))
+  if (input_key_down(context->input, KeyCode::W))
     state->paddle.y += PADDLE_SPEED * context->delta_time;
 
-  if (InputKeyDown(context->input, KeyCode::S))
+  if (input_key_down(context->input, KeyCode::S))
     state->paddle.y -= PADDLE_SPEED * context->delta_time;
 
-  if (InputKeyDown(context->input, KeyCode::A))
+  if (input_key_down(context->input, KeyCode::A))
     state->paddle.x -= PADDLE_SPEED * context->delta_time;
 
-  if (InputKeyDown(context->input, KeyCode::D))
+  if (input_key_down(context->input, KeyCode::D))
     state->paddle.x += PADDLE_SPEED * context->delta_time;
 
-  if (InputKeyPressed(context->input, KeyCode::Escape)) context->quit_requested = true;
+  if (input_key_pressed(context->input, KeyCode::Escape)) context->quit_requested = true;
 }
 
-static void Render(ApplicationContext *context)
+static void render(ApplicationContext *context)
 {
   BreakoutState *state = (BreakoutState *)context->state;
 
-  Clear(context->renderer, {0, 0, 0, 1});
-  DrawQuad(
+  clear(context->renderer, {0, 0, 0, 1});
+  draw_quad(
       context->renderer,
       {state->paddle.x * (f32)context->alpha +
            state->paddle_previous.x * (1.0f - (f32)context->alpha),
@@ -63,10 +63,10 @@ static void Render(ApplicationContext *context)
   );
 }
 
-ATR_MODULE_EXPORT const ApplicationAPI *AtreusGetApplicationApi()
+ATR_MODULE_EXPORT const ApplicationAPI *atreus_get_application_api()
 {
   static const ApplicationAPI api = {
-      ATR_APPLICATION_API_VERSION, sizeof(BreakoutState), Init, Shutdown, Update, Render
+      ATR_APPLICATION_API_VERSION, sizeof(BreakoutState), init, shutdown, update, render
   };
   return &api;
 }

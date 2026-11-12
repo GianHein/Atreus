@@ -19,9 +19,9 @@ struct GLContext
   HGLRC context;
 };
 
-GLContext *GLContextCreate(Window *window, const GLContextDesc &desc)
+GLContext *gl_context_create(Window *window, const GLContextDesc &desc)
 {
-  HWND hwnd = (HWND)WindowGetNativeHandle(window).window;
+  HWND hwnd = (HWND)window_get_native_handle(window).window;
   HDC  hdc  = GetDC(hwnd);
 
   PIXELFORMATDESCRIPTOR pfd = {};
@@ -78,55 +78,55 @@ GLContext *GLContextCreate(Window *window, const GLContextDesc &desc)
       0
   };
 
-  GLContext *context = static_cast<GLContext *>(MemAlloc(DefaultAllocator(), sizeof(GLContext)));
+  GLContext *context = static_cast<GLContext *>(mem_alloc(default_allocator(), sizeof(GLContext)));
   context->context   = wglCreateContextAttribsARB(hdc, nullptr, attribs);
   context->hdc       = hdc;
   context->hwnd      = hwnd;
 
-  GLContextMakeCurrent(context);
+  gl_context_make_current(context);
 
   if (!gladLoaderLoadGL())
   {
     ATR_LOG_ERROR("Failed to load OpenGL functions");
-    GLContextDestroy(context);
+    gl_context_destroy(context);
     return nullptr;
   }
 
-  if (desc.vsync) GLContextSetVSync(context, true);
+  if (desc.vsync) gl_context_set_vsync(context, true);
 
   ATR_LOG_DEBUG("GLContext created");
   return context;
 }
 
-void GLContextDestroy(GLContext *context)
+void gl_context_destroy(GLContext *context)
 {
   ATR_ASSERT(context != nullptr, "context required");
 
   wglMakeCurrent(nullptr, nullptr);
   wglDeleteContext(context->context);
-  MemFree(DefaultAllocator(), context, sizeof(GLContext));
+  mem_free(default_allocator(), context, sizeof(GLContext));
 
   ATR_LOG_DEBUG("GLContext destroyed");
 }
 
-void GLContextMakeCurrent(GLContext *context)
+void gl_context_make_current(GLContext *context)
 {
   ATR_ASSERT(context != nullptr, "context required");
 
   wglMakeCurrent(context->hdc, context->context);
 }
 
-void GLContextSwapBuffers(GLContext *context)
+void gl_context_swap_buffers(GLContext *context)
 {
   ATR_ASSERT(context != nullptr, "context required");
 
   SwapBuffers(context->hdc);
 }
 
-void GLContextSetVSync(GLContext *context, bool enabled)
+void gl_context_set_vsync(GLContext *context, bool enabled)
 {
   ATR_ASSERT(context != nullptr, "context required");
 
-  GLContextMakeCurrent(context);
+  gl_context_make_current(context);
   wglSwapIntervalEXT(enabled ? 1 : 0);
 }

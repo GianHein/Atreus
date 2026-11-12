@@ -12,7 +12,7 @@
 
 namespace
 {
-  u32 CompileShader(GLenum type, const char *source)
+  u32 compile_shader(GLenum type, const char *source)
   {
     u32 shader = 0;
 
@@ -30,7 +30,7 @@ namespace
       glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &info_log_size);
 
       char *info_log =
-          info_log_size > 0 ? (char *)MemAlloc(DefaultAllocator(), info_log_size) : nullptr;
+          info_log_size > 0 ? (char *)mem_alloc(default_allocator(), info_log_size) : nullptr;
       glGetShaderInfoLog(shader, info_log_size, nullptr, info_log);
 
       ATR_LOG_ERROR(
@@ -41,7 +41,7 @@ namespace
           info_log ? info_log : "(no info log)"
       );
 
-      MemFree(DefaultAllocator(), info_log, info_log_size);
+      mem_free(default_allocator(), info_log, info_log_size);
       glDeleteShader(shader);
       return 0;
     }
@@ -56,7 +56,7 @@ namespace
     return shader;
   }
 
-  u32 LinkProgram(u32 vertex_shader, u32 fragment_shader)
+  u32 link_program(u32 vertex_shader, u32 fragment_shader)
   {
     if (vertex_shader == 0 || fragment_shader == 0)
     {
@@ -88,12 +88,12 @@ namespace
       glGetProgramiv(shader_program, GL_INFO_LOG_LENGTH, &info_log_size);
 
       char *info_log =
-          info_log_size > 0 ? (char *)MemAlloc(DefaultAllocator(), info_log_size) : nullptr;
+          info_log_size > 0 ? (char *)mem_alloc(default_allocator(), info_log_size) : nullptr;
       glGetProgramInfoLog(shader_program, info_log_size, nullptr, info_log);
 
       ATR_LOG_ERROR("Failed to link shader program: %s", info_log ? info_log : "(no info log)");
 
-      MemFree(DefaultAllocator(), info_log, info_log_size);
+      mem_free(default_allocator(), info_log, info_log_size);
       glDeleteProgram(shader_program);
       return 0;
     }
@@ -167,7 +167,7 @@ struct Renderer2D
   u32 dropped_draw_commands;
 };
 
-static void PushDrawCommand(Renderer2D *renderer, DrawCommand command)
+static void push_draw_command(Renderer2D *renderer, DrawCommand command)
 {
   if (renderer->command_buffer_size >= MAX_COMMANDS)
   {
@@ -178,12 +178,12 @@ static void PushDrawCommand(Renderer2D *renderer, DrawCommand command)
   renderer->command_buffer[renderer->command_buffer_size++] = command;
 }
 
-Renderer2D *CreateRenderer2D(Window *window)
+Renderer2D *create_renderer2d(Window *window)
 {
   ATR_ASSERT(window != nullptr, "window required");
 
   GLContextDesc context_desc;
-  GLContext    *context = GLContextCreate(window, context_desc);
+  GLContext    *context = gl_context_create(window, context_desc);
   if (context == nullptr)
   {
     ATR_LOG_ERROR("Failed to create OpenGL context");
@@ -191,20 +191,20 @@ Renderer2D *CreateRenderer2D(Window *window)
   }
 
   Renderer2D *renderer =
-      static_cast<Renderer2D *>(MemAllocZeroed(DefaultAllocator(), sizeof(Renderer2D)));
+      static_cast<Renderer2D *>(mem_alloc_zeroed(default_allocator(), sizeof(Renderer2D)));
 
   renderer->window  = window;
   renderer->context = context;
 
-  u32 quad_vertex_shader   = CompileShader(GL_VERTEX_SHADER, quad_vertex_glsl);
-  u32 quad_fragment_shader = CompileShader(GL_FRAGMENT_SHADER, quad_fragment_glsl);
+  u32 quad_vertex_shader   = compile_shader(GL_VERTEX_SHADER, quad_vertex_glsl);
+  u32 quad_fragment_shader = compile_shader(GL_FRAGMENT_SHADER, quad_fragment_glsl);
 
-  renderer->quad_program = LinkProgram(quad_vertex_shader, quad_fragment_shader);
+  renderer->quad_program = link_program(quad_vertex_shader, quad_fragment_shader);
 
   if (renderer->quad_program == 0)
   {
     ATR_LOG_ERROR("Failed to link shader program for Renderer2D");
-    DestroyRenderer2D(renderer);
+    destroy_renderer2d(renderer);
     return nullptr;
   }
 
@@ -213,7 +213,7 @@ Renderer2D *CreateRenderer2D(Window *window)
     ATR_LOG_ERROR("u_resolution does not exist in quad program");
 
   renderer->vertices =
-      (QuadVertex *)MemAlloc(DefaultAllocator(), MAX_VERTICES * sizeof(QuadVertex));
+      (QuadVertex *)mem_alloc(default_allocator(), MAX_VERTICES * sizeof(QuadVertex));
 
   glGenVertexArrays(1, &renderer->vao);
   glBindVertexArray(renderer->vao);
@@ -227,7 +227,7 @@ Renderer2D *CreateRenderer2D(Window *window)
   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), (void *)(2 * sizeof(f32)));
   glEnableVertexAttribArray(1);
 
-  u32 *indices = (u32 *)MemAlloc(DefaultAllocator(), MAX_INDICES * sizeof(u32));
+  u32 *indices = (u32 *)mem_alloc(default_allocator(), MAX_INDICES * sizeof(u32));
 
   for (u32 i = 0; i < MAX_QUADS; ++i)
   {
@@ -243,7 +243,7 @@ Renderer2D *CreateRenderer2D(Window *window)
   glGenBuffers(1, &renderer->ebo);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->ebo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_INDICES * sizeof(u32), indices, GL_STATIC_DRAW);
-  MemFree(DefaultAllocator(), indices, MAX_INDICES * sizeof(u32));
+  mem_free(default_allocator(), indices, MAX_INDICES * sizeof(u32));
 
   ATR_LOG_DEBUG(
       "Quad batch: %u quads, vertex buffer %zu KB, index buffer %zu KB",
@@ -256,40 +256,40 @@ Renderer2D *CreateRenderer2D(Window *window)
   return renderer;
 }
 
-void DestroyRenderer2D(Renderer2D *renderer)
+void destroy_renderer2d(Renderer2D *renderer)
 {
   ATR_ASSERT(renderer != nullptr, "renderer required");
 
-  GLContextMakeCurrent(renderer->context);
+  gl_context_make_current(renderer->context);
   glDeleteProgram(renderer->quad_program);
 
   glDeleteVertexArrays(1, &renderer->vao);
   glDeleteBuffers(1, &renderer->vbo);
   glDeleteBuffers(1, &renderer->ebo);
 
-  GLContextDestroy(renderer->context);
+  gl_context_destroy(renderer->context);
 
   if (renderer->vertices)
-    MemFree(DefaultAllocator(), renderer->vertices, MAX_VERTICES * sizeof(QuadVertex));
+    mem_free(default_allocator(), renderer->vertices, MAX_VERTICES * sizeof(QuadVertex));
 
-  MemFree(DefaultAllocator(), renderer, sizeof(Renderer2D));
+  mem_free(default_allocator(), renderer, sizeof(Renderer2D));
 
   ATR_LOG_INFO("Renderer2D destroyed");
 }
 
-void BeginFrame2D(Renderer2D *renderer)
+void begin_frame2d(Renderer2D *renderer)
 {
   ATR_PROFILE_SCOPE();
-  GLContextMakeCurrent(renderer->context);
+  gl_context_make_current(renderer->context);
 
   u32 width, height;
-  WindowGetClientSize(renderer->window, &width, &height);
+  window_get_client_size(renderer->window, &width, &height);
 
   renderer->resolution = {.x = width, .y = height};
   glViewport(0, 0, width, height);
 }
 
-static void FlushQuads(Renderer2D *renderer)
+static void flush_quads(Renderer2D *renderer)
 {
   if (renderer->quad_count == 0) return;
 
@@ -309,9 +309,9 @@ static void FlushQuads(Renderer2D *renderer)
   renderer->quad_count = 0;
 }
 
-static void PushQuad(Renderer2D *renderer, Vec2 bottom_left, Vec2 size, Color color)
+static void push_quad(Renderer2D *renderer, Vec2 bottom_left, Vec2 size, Color color)
 {
-  if (renderer->quad_count == MAX_QUADS) FlushQuads(renderer);
+  if (renderer->quad_count == MAX_QUADS) flush_quads(renderer);
 
   QuadVertex *vertex = &renderer->vertices[renderer->quad_count * 4];
 
@@ -323,7 +323,7 @@ static void PushQuad(Renderer2D *renderer, Vec2 bottom_left, Vec2 size, Color co
   renderer->quad_count++;
 }
 
-void EndFrame2D(Renderer2D *renderer)
+void end_frame2d(Renderer2D *renderer)
 {
   ATR_PROFILE_SCOPE();
 
@@ -348,7 +348,7 @@ void EndFrame2D(Renderer2D *renderer)
     {
       Color color = command.clear.color;
 
-      FlushQuads(renderer);
+      flush_quads(renderer);
       glClearColor(color.r, color.g, color.b, color.a);
       glClear(GL_COLOR_BUFFER_BIT);
     }
@@ -356,7 +356,7 @@ void EndFrame2D(Renderer2D *renderer)
 
     case DrawCommandType::Quad:
     {
-      PushQuad(renderer, command.quad.bottom_left, command.quad.size, command.quad.color);
+      push_quad(renderer, command.quad.bottom_left, command.quad.size, command.quad.color);
     }
     break;
 
@@ -365,7 +365,7 @@ void EndFrame2D(Renderer2D *renderer)
     }
   }
 
-  FlushQuads(renderer);
+  flush_quads(renderer);
   renderer->command_buffer_size = 0;
 
   ATR_PROFILE_PLOT("Renderer2D quads", static_cast<i64>(renderer->frame_quad_count));
@@ -373,18 +373,18 @@ void EndFrame2D(Renderer2D *renderer)
   renderer->frame_quad_count = 0;
   renderer->frame_draw_calls = 0;
 
-  GLContextSwapBuffers(renderer->context);
+  gl_context_swap_buffers(renderer->context);
   ATR_PROFILE_FRAME();
 }
 
-void Clear(Renderer2D *renderer, Color color)
+void clear(Renderer2D *renderer, Color color)
 {
-  PushDrawCommand(renderer, {.type = DrawCommandType::Clear, .clear = {.color = color}});
+  push_draw_command(renderer, {.type = DrawCommandType::Clear, .clear = {.color = color}});
 }
 
-void DrawQuad(Renderer2D *renderer, Vec2 bottom_left, Vec2 size, Color color)
+void draw_quad(Renderer2D *renderer, Vec2 bottom_left, Vec2 size, Color color)
 {
-  PushDrawCommand(
+  push_draw_command(
       renderer,
       {.type = DrawCommandType::Quad,
        .quad = {.bottom_left = bottom_left, .size = size, .color = color}}

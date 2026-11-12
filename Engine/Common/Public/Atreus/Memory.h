@@ -13,22 +13,22 @@ struct Allocator
 
 constexpr usize DEFAULT_ALIGNMENT = 16;
 
-ATR_API const Allocator *DefaultAllocator();
+ATR_API const Allocator *default_allocator();
 
-inline void *MemAlloc(const Allocator *allocator, usize size, usize alignment = DEFAULT_ALIGNMENT)
+inline void *mem_alloc(const Allocator *allocator, usize size, usize alignment = DEFAULT_ALIGNMENT)
 {
   return allocator->alloc(allocator->user, size, alignment);
 }
 
 inline void *
-MemAllocZeroed(const Allocator *allocator, usize size, usize alignment = DEFAULT_ALIGNMENT)
+mem_alloc_zeroed(const Allocator *allocator, usize size, usize alignment = DEFAULT_ALIGNMENT)
 {
   void *ptr = allocator->alloc(allocator->user, size, alignment);
   if (ptr != nullptr) memset(ptr, 0, size);
   return ptr;
 }
 
-inline void MemFree(const Allocator *allocator, void *ptr, usize size)
+inline void mem_free(const Allocator *allocator, void *ptr, usize size)
 {
   if (ptr != nullptr)
   {

@@ -30,11 +30,11 @@ struct ApplicationAPI
   u32   api_version;
   usize state_size;
 
-  void (*Init)(ApplicationContext *context);
-  void (*Shutdown)(ApplicationContext *context);
-  void (*Update)(ApplicationContext *context);
-  void (*Render)(ApplicationContext *context);
+  void (*init)(ApplicationContext *context);
+  void (*shutdown)(ApplicationContext *context);
+  void (*update)(ApplicationContext *context);
+  void (*render)(ApplicationContext *context);
 };
 
 using GetApplicationApiFn = const ApplicationAPI *(*)();
-#define ATR_APPLICATION_ENTRY_NAME "AtreusGetApplicationApi"
+#define ATR_APPLICATION_ENTRY_NAME "atreus_get_application_api"

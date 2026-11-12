@@ -26,7 +26,7 @@ namespace
   };
 }
 
-bool LogAddSink(LogSinkFn sink, void *user)
+bool log_add_sink(LogSinkFn sink, void *user)
 {
   if (sink_count >= MAX_SINKS) return false;
 
@@ -35,7 +35,7 @@ bool LogAddSink(LogSinkFn sink, void *user)
   return true;
 }
 
-void LogRemoveSink(LogSinkFn sink, void *user)
+void log_remove_sink(LogSinkFn sink, void *user)
 {
   for (u32 i = 0; i < sink_count; ++i)
   {
@@ -48,7 +48,7 @@ void LogRemoveSink(LogSinkFn sink, void *user)
   }
 }
 
-const char *LogLevelName(LogLevel level)
+const char *log_level_name(LogLevel level)
 {
   switch (level)
   {
@@ -69,7 +69,7 @@ const char *LogLevelName(LogLevel level)
   return "?";
 }
 
-void LogWrite(LogLevel level, LogContext context, const char *format, ...)
+void log_write(LogLevel level, LogContext context, const char *format, ...)
 {
   char message[1024];
   int  prefix_length = snprintf(
@@ -87,7 +87,7 @@ void LogWrite(LogLevel level, LogContext context, const char *format, ...)
   va_end(args);
 
   fprintf(
-      stderr, "%s[%s]%s\x1b[0m\n", colors[static_cast<u8>(level)], LogLevelName(level), message
+      stderr, "%s[%s]%s\x1b[0m\n", colors[static_cast<u8>(level)], log_level_name(level), message
   );
   fflush(stderr);
 

@@ -36,18 +36,18 @@ enum class FileSeekOrigin : u8
   End,
 };
 
-ATR_API bool FileExists(const char *path);
+ATR_API bool file_exists(const char *path);
 
-ATR_API bool DirectoryCreate(const char *path);
+ATR_API bool directory_create(const char *path);
 
-ATR_API bool FileGetSize(FileHandle handle, u64 *out_size);
+ATR_API bool file_get_size(FileHandle handle, u64 *out_size);
 
 ATR_API bool
-FileOpen(const char *path, FileAccessMode access, FileOpenMode mode, FileHandle *out_handle);
+file_open(const char *path, FileAccessMode access, FileOpenMode mode, FileHandle *out_handle);
 
-ATR_API void FileClose(FileHandle *handle);
+ATR_API void file_close(FileHandle *handle);
 
-ATR_API bool FileRead(
+ATR_API bool file_read(
     FileHandle     handle,
     FileSeekOrigin origin,
     i64            distance,
@@ -56,7 +56,7 @@ ATR_API bool FileRead(
     u64           *out_bytes_read
 );
 
-ATR_API bool FileReadToString(
+ATR_API bool file_read_to_string(
     FileHandle     handle,
     FileSeekOrigin origin,
     i64            distance,
@@ -65,7 +65,7 @@ ATR_API bool FileReadToString(
     u64           *out_bytes_read
 );
 
-ATR_API bool FileWrite(
+ATR_API bool file_write(
     FileHandle     handle,
     FileSeekOrigin origin,
     i64            distance,
@@ -74,4 +74,4 @@ ATR_API bool FileWrite(
     u64           *out_bytes_written
 );
 
-ATR_API void FileFlush(FileHandle handle);
+ATR_API void file_flush(FileHandle handle);

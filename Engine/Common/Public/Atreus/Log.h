@@ -23,22 +23,22 @@ struct LogContext
 
 using LogSinkFn = void (*)(void *user, LogLevel level, const char *message);
 
-ATR_API bool        LogAddSink(LogSinkFn sink, void *user);
-ATR_API void        LogRemoveSink(LogSinkFn sink, void *user);
-ATR_API void        LogWrite(LogLevel level, LogContext context, const char *format, ...);
-ATR_API const char *LogLevelName(LogLevel level);
+ATR_API bool        log_add_sink(LogSinkFn sink, void *user);
+ATR_API void        log_remove_sink(LogSinkFn sink, void *user);
+ATR_API void        log_write(LogLevel level, LogContext context, const char *format, ...);
+ATR_API const char *log_level_name(LogLevel level);
 
-#define ATR_LOG_TRACE(...) LogWrite(LogLevel::Trace, {__FILE__, __LINE__, __func__}, __VA_ARGS__)
+#define ATR_LOG_TRACE(...) log_write(LogLevel::Trace, {__FILE__, __LINE__, __func__}, __VA_ARGS__)
 
-#define ATR_LOG_DEBUG(...) LogWrite(LogLevel::Debug, {__FILE__, __LINE__, __func__}, __VA_ARGS__)
+#define ATR_LOG_DEBUG(...) log_write(LogLevel::Debug, {__FILE__, __LINE__, __func__}, __VA_ARGS__)
 
-#define ATR_LOG_INFO(...) LogWrite(LogLevel::Info, {__FILE__, __LINE__, __func__}, __VA_ARGS__)
+#define ATR_LOG_INFO(...) log_write(LogLevel::Info, {__FILE__, __LINE__, __func__}, __VA_ARGS__)
 
-#define ATR_LOG_WARN(...) LogWrite(LogLevel::Warn, {__FILE__, __LINE__, __func__}, __VA_ARGS__)
+#define ATR_LOG_WARN(...) log_write(LogLevel::Warn, {__FILE__, __LINE__, __func__}, __VA_ARGS__)
 
-#define ATR_LOG_ERROR(...) LogWrite(LogLevel::Error, {__FILE__, __LINE__, __func__}, __VA_ARGS__)
+#define ATR_LOG_ERROR(...) log_write(LogLevel::Error, {__FILE__, __LINE__, __func__}, __VA_ARGS__)
 
-#define ATR_LOG_FATAL(...) LogWrite(LogLevel::Fatal, {__FILE__, __LINE__, __func__}, __VA_ARGS__)
+#define ATR_LOG_FATAL(...) log_write(LogLevel::Fatal, {__FILE__, __LINE__, __func__}, __VA_ARGS__)
 
 #if !defined(NDEBUG)
 #  define ATR_ASSERT(condition, message)                                                           \

@@ -145,8 +145,8 @@ enum class MouseButton : u8
   Count,
 };
 
-ATR_API const char *KeyCodeName(KeyCode key);
-ATR_API KeyCode     KeyCodeFromName(const char *name);
+ATR_API const char *keycode_name(KeyCode key);
+ATR_API KeyCode     keycode_from_name(const char *name);
 
 // Gamepads
 
@@ -183,4 +183,4 @@ struct GamepadState
 
 constexpr u32 MAX_GAMEPADS = 4;
 
-ATR_API void GamepadPoll(u32 index, GamepadState *out_state);
+ATR_API void gamepad_poll(u32 index, GamepadState *out_state);

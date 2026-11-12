@@ -109,20 +109,20 @@ struct WindowDesc
   bool        borderless = false;
 };
 
-ATR_API Window *WindowCreate(const WindowDesc &desc);
-ATR_API void    WindowDestroy(Window *window);
+ATR_API Window *window_create(const WindowDesc &desc);
+ATR_API void    window_destroy(Window *window);
 
-ATR_API void WindowPumpMessages();
-ATR_API bool WindowPollEvent(Window *window, WindowEvent *out_event);
+ATR_API void window_pump_messages();
+ATR_API bool window_poll_event(Window *window, WindowEvent *out_event);
 
-ATR_API void WindowGetClientSize(const Window *window, u32 *out_width, u32 *out_height);
-ATR_API void WindowSetTitle(Window *window, const char *title);
-ATR_API void WindowSetFullscreen(Window *window, bool fullscreen);
-ATR_API bool WindowIsFullscreen(const Window *window);
-ATR_API void WindowSetBorderless(Window *window, bool borderless);
-ATR_API bool WindowIsBorderless(const Window *window);
-ATR_API bool WindowIsFocused(const Window *window);
-ATR_API bool WindowIsClosing(const Window *window);
+ATR_API void window_get_client_size(const Window *window, u32 *out_width, u32 *out_height);
+ATR_API void window_set_title(Window *window, const char *title);
+ATR_API void window_set_fullscreen(Window *window, bool fullscreen);
+ATR_API bool window_is_fullscreen(const Window *window);
+ATR_API void window_set_borderless(Window *window, bool borderless);
+ATR_API bool window_is_borderless(const Window *window);
+ATR_API bool window_is_focused(const Window *window);
+ATR_API bool window_is_closing(const Window *window);
 
 struct NativeWindowHandle
 {
@@ -130,4 +130,4 @@ struct NativeWindowHandle
   u64   window;
 };
 
-ATR_API NativeWindowHandle WindowGetNativeHandle(Window *window);
+ATR_API NativeWindowHandle window_get_native_handle(Window *window);

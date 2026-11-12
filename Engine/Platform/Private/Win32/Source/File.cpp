@@ -8,13 +8,13 @@
 
 #include <Windows.h>
 
-bool FileExists(const char *path)
+bool file_exists(const char *path)
 {
   DWORD attributes = GetFileAttributesA(path);
   return (attributes != INVALID_FILE_ATTRIBUTES && !(attributes & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-bool DirectoryCreate(const char *path)
+bool directory_create(const char *path)
 {
   if (CreateDirectoryA(path, nullptr)) return true;
 
@@ -27,7 +27,7 @@ bool DirectoryCreate(const char *path)
   return false;
 }
 
-bool FileGetSize(FileHandle handle, u64 *out_size)
+bool file_get_size(FileHandle handle, u64 *out_size)
 {
   LARGE_INTEGER size;
   if (!GetFileSizeEx((HANDLE)handle.handle, &size))
@@ -42,7 +42,7 @@ bool FileGetSize(FileHandle handle, u64 *out_size)
   return true;
 }
 
-static DWORD ToWin32DesiredAccess(FileAccessMode access)
+static DWORD to_win32_desired_access(FileAccessMode access)
 {
   switch (access)
   {
@@ -59,7 +59,7 @@ static DWORD ToWin32DesiredAccess(FileAccessMode access)
   ATR_UNREACHABLE();
 }
 
-static DWORD ToWin32CreationDisposition(FileOpenMode mode)
+static DWORD to_win32_creation_disposition(FileOpenMode mode)
 {
   switch (mode)
   {
@@ -79,7 +79,7 @@ static DWORD ToWin32CreationDisposition(FileOpenMode mode)
   ATR_UNREACHABLE();
 }
 
-static bool ToWin32SeekOrigin(HANDLE file, FileSeekOrigin origin, i64 distance)
+static bool to_win32_seek_origin(HANDLE file, FileSeekOrigin origin, i64 distance)
 {
   LARGE_INTEGER to_move;
   to_move.QuadPart = distance;
@@ -99,14 +99,14 @@ static bool ToWin32SeekOrigin(HANDLE file, FileSeekOrigin origin, i64 distance)
   ATR_UNREACHABLE();
 }
 
-bool FileOpen(const char *path, FileAccessMode access, FileOpenMode mode, FileHandle *out_handle)
+bool file_open(const char *path, FileAccessMode access, FileOpenMode mode, FileHandle *out_handle)
 {
   HANDLE handle = CreateFileA(
       path,
-      ToWin32DesiredAccess(access),
+      to_win32_desired_access(access),
       FILE_SHARE_READ,
       NULL,
-      ToWin32CreationDisposition(mode),
+      to_win32_creation_disposition(mode),
       FILE_ATTRIBUTE_NORMAL,
       NULL
   );
@@ -127,14 +127,14 @@ bool FileOpen(const char *path, FileAccessMode access, FileOpenMode mode, FileHa
   return true;
 }
 
-void FileClose(FileHandle *handle)
+void file_close(FileHandle *handle)
 {
   ATR_ASSERT(handle->handle != nullptr, "Cannot close file using an emtpy handle");
   CloseHandle((HANDLE)handle->handle);
   *handle = INVALID_FILE_HANDLE;
 }
 
-bool FileRead(
+bool file_read(
     FileHandle     handle,
     FileSeekOrigin origin,
     i64            distance,
@@ -147,7 +147,7 @@ bool FileRead(
 
   DWORD bytes_read = 0;
 
-  if (!ToWin32SeekOrigin((HANDLE)handle.handle, origin, distance))
+  if (!to_win32_seek_origin((HANDLE)handle.handle, origin, distance))
   {
     ATR_LOG_ERROR(
         "Platform::File", "Failed to SeekOrigin using SetFilePointerEx: %lu", GetLastError()
@@ -166,7 +166,7 @@ bool FileRead(
   return true;
 }
 
-bool FileWrite(
+bool file_write(
     FileHandle     handle,
     FileSeekOrigin origin,
     i64            distance,
@@ -179,7 +179,7 @@ bool FileWrite(
 
   DWORD bytes_written = 0;
 
-  if (!ToWin32SeekOrigin((HANDLE)handle.handle, origin, distance))
+  if (!to_win32_seek_origin((HANDLE)handle.handle, origin, distance))
   {
     ATR_LOG_ERROR(
         "Platform::File", "Failed to SeekOrigin using SetFilePointerEx: %lu", GetLastError()
@@ -200,7 +200,7 @@ bool FileWrite(
   return true;
 }
 
-void FileFlush(FileHandle handle)
+void file_flush(FileHandle handle)
 {
   ATR_ASSERT(handle.handle != nullptr, "Cannot flush using empty file handle");
 

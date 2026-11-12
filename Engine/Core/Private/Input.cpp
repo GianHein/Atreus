@@ -2,12 +2,12 @@
 
 #include <cstring>
 
-void InputInit(InputState *input)
+void input_init(InputState *input)
 {
   memset(input, 0, sizeof(InputState));
 }
 
-void InputClearTransients(InputState *input)
+void input_clear_transients(InputState *input)
 {
   memset(input->key_pressed, 0, sizeof(input->key_pressed));
   memset(input->key_released, 0, sizeof(input->key_released));
@@ -18,7 +18,7 @@ void InputClearTransients(InputState *input)
   input->mouse_wheel = 0.0f;
 }
 
-void InputHandleEvent(InputState *input, const WindowEvent &event)
+void input_handle_event(InputState *input, const WindowEvent &event)
 {
   switch (event.type)
   {

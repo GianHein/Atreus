@@ -13,34 +13,34 @@
 
 namespace
 {
-  u64 QueryFrequency()
+  u64 query_frequency()
   {
     LARGE_INTEGER frequency;
     QueryPerformanceFrequency(&frequency);
     return static_cast<u64>(frequency.QuadPart);
   }
 
-  const u64 frequency = QueryFrequency();
+  const u64 frequency = query_frequency();
 }
 
-u64 TimeNowTicks()
+u64 time_now_ticks()
 {
   LARGE_INTEGER counter;
   QueryPerformanceCounter(&counter);
   return static_cast<u64>(counter.QuadPart);
 }
 
-f64 TimeTicksToSeconds(u64 ticks)
+f64 time_ticks_to_seconds(u64 ticks)
 {
   return static_cast<f64>(ticks) / static_cast<f64>(frequency);
 }
 
-f64 TimeNowSeconds()
+f64 time_now_seconds()
 {
-  return TimeTicksToSeconds(TimeNowTicks());
+  return time_ticks_to_seconds(time_now_ticks());
 }
 
-i64 TimeUnixMilliseconds()
+i64 time_unix_milliseconds()
 {
   FILETIME file_time;
   GetSystemTimeAsFileTime(&file_time);
@@ -48,7 +48,7 @@ i64 TimeUnixMilliseconds()
   return static_cast<i64>((ticks - 116444736000000000ull) / 10000ull);
 }
 
-DateTime TimeGetUtcDate()
+DateTime time_get_utc_date()
 {
   SYSTEMTIME system_time;
   GetSystemTime(&system_time);
@@ -65,7 +65,7 @@ DateTime TimeGetUtcDate()
   return date_time;
 }
 
-DateTime TimeGetLocalDate()
+DateTime time_get_local_date()
 {
   SYSTEMTIME system_time;
   GetLocalTime(&system_time);
@@ -84,7 +84,7 @@ DateTime TimeGetLocalDate()
 
 // Paths
 
-bool PathGetExecutable(char *buffer, u64 capacity)
+bool path_get_executable(char *buffer, u64 capacity)
 {
   ATR_ASSERT(buffer != nullptr && capacity > 0, "buffer must hold at least the terminator");
 
@@ -103,7 +103,7 @@ bool PathGetExecutable(char *buffer, u64 capacity)
   return true;
 }
 
-bool PathGetDirectory(const char *path, char *buffer, u64 capacity)
+bool path_get_directory(const char *path, char *buffer, u64 capacity)
 {
   ATR_ASSERT(path != nullptr, "path must not be null");
   ATR_ASSERT(buffer != nullptr && capacity > 0, "buffer must hold at least the terminator");
@@ -143,7 +143,7 @@ bool PathGetDirectory(const char *path, char *buffer, u64 capacity)
 
 // Dynamic libraries
 
-Library *LibraryOpen(const char *path)
+Library *library_open(const char *path)
 {
   HMODULE handle = LoadLibraryA(path);
 
@@ -161,7 +161,7 @@ Library *LibraryOpen(const char *path)
   return reinterpret_cast<Library *>(handle);
 }
 
-void *LibrarySymbol(Library *library, const char *name)
+void *library_symbol(Library *library, const char *name)
 {
   FARPROC symbol = GetProcAddress(reinterpret_cast<HMODULE>(library), name);
 
@@ -179,12 +179,12 @@ void *LibrarySymbol(Library *library, const char *name)
   return reinterpret_cast<void *>(symbol);
 }
 
-void LibraryClose(Library *library)
+void library_close(Library *library)
 {
   if (library != nullptr) FreeLibrary(reinterpret_cast<HMODULE>(library));
 }
 
-const char *LibraryExtension()
+const char *library_extension()
 {
   return ".dll";
 }
