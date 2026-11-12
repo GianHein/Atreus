@@ -123,7 +123,6 @@ ATR_API void WindowSetBorderless(Window *window, bool borderless);
 ATR_API bool WindowIsBorderless(const Window *window);
 ATR_API bool WindowIsFocused(const Window *window);
 ATR_API bool WindowIsClosing(const Window *window);
-ATR_API void WindowSetCursorVisible(Window *window, bool visible);
 
 struct NativeWindowHandle
 {

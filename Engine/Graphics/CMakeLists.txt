@@ -8,7 +8,7 @@ endif()
 
 file(GLOB GRAPHICS_SOURCES CONFIGURE_DEPENDS
   "${CMAKE_CURRENT_SOURCE_DIR}/Private/OpenGL/*.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/Private/OpenGL/${platform_dir}/*.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Private/OpenGL/Context/${platform_dir}/*.cpp"
 )
 
 add_library(Atreus.Graphics.Headers INTERFACE)
