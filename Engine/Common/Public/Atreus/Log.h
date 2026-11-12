@@ -1,3 +1,7 @@
+// Log.h: log sinks, logging, assertions, and runtime invariant validation
+// ATR_LOG_* macros for levels TRACE, DEBUG, INFO, WARN, ERROR, FATAL
+// ATR_ASSERT(condition, message), ATR_VERIFY(condition), ATR_UNREACHABLE
+
 #pragma once
 
 #include "Atreus/Types.h"

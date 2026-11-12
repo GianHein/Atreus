@@ -1,3 +1,5 @@
+// Memory.h: common allocator interface, default allocator and heap memory management
+
 #pragma once
 
 #include "Atreus/Types.h"

@@ -1,3 +1,5 @@
+// Types.h: primitive type aliases, macros for compiler and platform detection and symbol visibility
+
 #pragma once
 
 #include <cstddef>
