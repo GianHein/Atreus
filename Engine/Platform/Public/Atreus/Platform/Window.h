@@ -112,7 +112,10 @@ struct WindowDesc
 ATR_API Window *window_create(const WindowDesc &desc);
 ATR_API void    window_destroy(Window *window);
 
+// Pumps the window's OS messages
 ATR_API void window_pump_messages();
+
+// Dequeues one element from the window's OS event queue into out_event
 ATR_API bool window_poll_event(Window *window, WindowEvent *out_event);
 
 ATR_API void window_get_client_size(const Window *window, u32 *out_width, u32 *out_height);

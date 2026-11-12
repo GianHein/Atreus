@@ -56,6 +56,7 @@ ATR_API bool file_read(
     u64           *out_bytes_read
 );
 
+// Helper to directly read a file's content to a \0 terminated string buffer
 ATR_API bool file_read_to_string(
     FileHandle     handle,
     FileSeekOrigin origin,

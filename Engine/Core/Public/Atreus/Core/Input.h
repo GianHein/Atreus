@@ -1,3 +1,5 @@
+// Input.h: core input abstraction over InputState
+
 #pragma once
 
 #include "Atreus/Math.h"
@@ -20,9 +22,14 @@ struct InputState
   bool mouse_released[INPUT_MOUSE_BUTTON_COUNT];
 };
 
+// Initializes an InputState to 0
 ATR_API void input_init(InputState *input);
 
+// Clears transient states between frames (key_down, button_down)
 ATR_API void input_clear_transients(InputState *input);
+
+// Called during PollEvents loop to fill InputState using WindowEvents provided by the Platform
+// layer
 ATR_API void input_handle_event(InputState *input, const WindowEvent &event);
 
 inline bool input_key_down(const InputState *input, KeyCode key)
