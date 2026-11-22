@@ -39,18 +39,19 @@ namespace
 {
   KeyCode translate_key(WPARAM virtual_key, LPARAM flags)
   {
+    UINT scancode = (flags >> 16) & 0xFF;
+
+    if (scancode == 0x29) return KeyCode::GraveAccent;
+
     if (virtual_key >= 'A' && virtual_key <= 'Z')
-    {
       return static_cast<KeyCode>(static_cast<u16>(KeyCode::A) + (virtual_key - 'A'));
-    }
+
     if (virtual_key >= '0' && virtual_key <= '9')
-    {
       return static_cast<KeyCode>(static_cast<u16>(KeyCode::Num0) + (virtual_key - '0'));
-    }
+
     if (virtual_key >= VK_F1 && virtual_key <= VK_F12)
-    {
       return static_cast<KeyCode>(static_cast<u16>(KeyCode::F1) + (virtual_key - VK_F1));
-    }
+
     bool extended = (flags & (1 << 24)) != 0;
     switch (virtual_key)
     {
