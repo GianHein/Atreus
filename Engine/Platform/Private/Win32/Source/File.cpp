@@ -32,9 +32,7 @@ bool file_get_size(FileHandle handle, u64 *out_size)
   LARGE_INTEGER size;
   if (!GetFileSizeEx((HANDLE)handle.handle, &size))
   {
-    ATR_LOG_ERROR(
-        "Platform::File", "Failed to get file size using GetFileSizeEx: %lu", GetLastError()
-    );
+    ATR_LOG_ERROR("Failed to get file size using GetFileSizeEx: %lu", GetLastError());
     return false;
   }
 
@@ -115,15 +113,13 @@ bool file_open(const char *path, FileAccessMode access, FileOpenMode mode, FileH
   {
     *out_handle = INVALID_FILE_HANDLE;
 
-    ATR_LOG_ERROR(
-        "Platform::File", "Failed to open file '%s' through CreateFileA: %lu", path, GetLastError()
-    );
+    ATR_LOG_ERROR("Failed to open file '%s' through CreateFileA: %lu", path, GetLastError());
     return false;
   }
 
   out_handle->handle = handle;
 
-  ATR_LOG_INFO("Platform::File", "Opened file '%s'", path);
+  ATR_LOG_INFO("Opened file '%s'", path);
   return true;
 }
 
@@ -149,15 +145,13 @@ bool file_read(
 
   if (!to_win32_seek_origin((HANDLE)handle.handle, origin, distance))
   {
-    ATR_LOG_ERROR(
-        "Platform::File", "Failed to SeekOrigin using SetFilePointerEx: %lu", GetLastError()
-    );
+    ATR_LOG_ERROR("Failed to SeekOrigin using SetFilePointerEx: %lu", GetLastError());
     return false;
   }
 
   if (!ReadFile((HANDLE)handle.handle, buffer, size, &bytes_read, NULL))
   {
-    ATR_LOG_ERROR("Platform::File", "Could not read file data using ReadFile: %lu", GetLastError());
+    ATR_LOG_ERROR("Could not read file data using ReadFile: %lu", GetLastError());
     return false;
   }
 
@@ -181,17 +175,13 @@ bool file_write(
 
   if (!to_win32_seek_origin((HANDLE)handle.handle, origin, distance))
   {
-    ATR_LOG_ERROR(
-        "Platform::File", "Failed to SeekOrigin using SetFilePointerEx: %lu", GetLastError()
-    );
+    ATR_LOG_ERROR("Failed to SeekOrigin using SetFilePointerEx: %lu", GetLastError());
     return false;
   }
 
   if (!WriteFile((HANDLE)handle.handle, buffer, size, &bytes_written, NULL))
   {
-    ATR_LOG_ERROR(
-        "Platform::File", "Could not write file data using WriteFile: %lu", GetLastError()
-    );
+    ATR_LOG_ERROR("Could not write file data using WriteFile: %lu", GetLastError());
     return false;
   }
 
@@ -205,7 +195,5 @@ void file_flush(FileHandle handle)
   ATR_ASSERT(handle.handle != nullptr, "Cannot flush using empty file handle");
 
   if (!FlushFileBuffers((HANDLE)handle.handle))
-    ATR_LOG_ERROR(
-        "Platform::File", "Failed to flush file using FlushFileBuffers: %lu", GetLastError()
-    );
+    ATR_LOG_ERROR("Failed to flush file using FlushFileBuffers: %lu", GetLastError());
 }
