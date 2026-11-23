@@ -45,7 +45,7 @@ template <typename T> void array_free(Array<T> *array)
 {
   if (array->data != nullptr)
   {
-    MemFree(array->allocator, array->data, sizeof(T) * array->capacity);
+    mem_free(array->allocator, array->data, sizeof(T) * array->capacity);
 
     array->data     = nullptr;
     array->count    = 0;
@@ -66,7 +66,7 @@ template <typename T> bool array_reserve(Array<T> *array, u32 min_capacity)
   }
 
   T *new_data = static_cast<T *>(
-      MemAlloc(array->allocator, sizeof(T) * new_capacity, alignof(T) < 16 ? 16 : alignof(T))
+      mem_alloc(array->allocator, sizeof(T) * new_capacity, alignof(T) < 16 ? 16 : alignof(T))
   );
   if (new_data == nullptr)
   {
@@ -77,7 +77,7 @@ template <typename T> bool array_reserve(Array<T> *array, u32 min_capacity)
   if (array->data != nullptr)
   {
     memcpy(new_data, array->data, sizeof(T) * array->count);
-    MemFree(array->allocator, array->data, sizeof(T) * array->capacity);
+    mem_free(array->allocator, array->data, sizeof(T) * array->capacity);
   }
 
   array->data     = new_data;
@@ -106,7 +106,7 @@ template <typename T> T *array_push(Array<T> *array, const T &value)
 {
   T local = value;
 
-  if (!ArrayReserve(array, array->count + 1)) return nullptr;
+  if (!array_reserve(array, array->count + 1)) return nullptr;
 
   T *slot = array->data + array->count;
   *slot   = local;
