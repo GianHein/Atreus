@@ -88,7 +88,7 @@ template <typename T> bool array_reserve(Array<T> *array, u32 min_capacity)
 // Resizes the array; new elements are zero-initialized
 template <typename T> bool array_resize(Array<T> *array, u32 new_count)
 {
-  if (!ArrayReserve(array, new_count)) return false;
+  if (!array_reserve(array, new_count)) return false;
 
   if (new_count > array->count)
     memset(array->data + array->count, 0, sizeof(T) * (new_count - array->count));
@@ -118,7 +118,7 @@ template <typename T> T *array_push(Array<T> *array, const T &value)
 // Appends an element and returns it zero-initialized
 template <typename T> T *array_push_zeroed(Array<T> *array)
 {
-  if (!ArrayReserve(array, array->count + 1)) return nullptr;
+  if (!array_reserve(array, array->count + 1)) return nullptr;
 
   T *slot = array->data + array->count;
   memset(slot, 0, sizeof(T));
@@ -130,7 +130,7 @@ template <typename T> T *array_push_zeroed(Array<T> *array)
 template <typename T> bool array_append(Array<T> *array, const T *values, u32 value_count)
 {
   if (value_count == 0) return true;
-  if (!ArrayReserve(array, array->count + value_count)) return false;
+  if (!array_reserve(array, array->count + value_count)) return false;
 
   memcpy(array->data + array->count, values, sizeof(T) * value_count);
   array->count += value_count;
@@ -166,7 +166,7 @@ template <typename T> bool array_insert(Array<T> *array, u32 index, const T &val
 
   T local = value;
 
-  if (!ArrayReserve(array, array->count + 1)) return false;
+  if (!array_reserve(array, array->count + 1)) return false;
 
   memmove(array->data + index + 1, array->data + index, sizeof(T) * (array->count - index));
   array->data[index] = local;
