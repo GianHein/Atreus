@@ -15,10 +15,14 @@ add_subdirectory(Vendor/glad)
 
 option(TRACY_ENABLE "" ON)
 option(TRACY_ON_DEMAND "" OFF)
+
 # My laptop's TSC is not synchronized across cores (kernel marks it unstable),
 # so rdtsc timestamps jump backwards on core migration and break the profiler UI
-option(TRACY_TIMER_FALLBACK "" ON)
-option(TRACY_DISALLOW_HW_TIMER "" ON)
+if (UNIX)
+  option(TRACY_TIMER_FALLBACK "" ON)
+  option(TRACY_DISALLOW_HW_TIMER "" ON)
+endif()
+
 add_subdirectory(Vendor/tracy)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMake")
